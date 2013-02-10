@@ -17,8 +17,9 @@ class FeedItem:
   name = ""
   url = ""
   type = None
+  date = ""
 
-  def __init__(self,content):
+  def __init__(self, content):
 
     self.content = content
 
