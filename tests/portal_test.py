@@ -11,7 +11,7 @@ class TestPortal:
   @classmethod
   def setup_class(self):
     content = urllib2.urlopen(self.main).read()
-    self.feed = feed = Feed(content)
+    self.feed = Feed(content)
 
   def can_be_reached_test(self):
     print '%d items' % len(self.feed.items)
@@ -43,7 +43,7 @@ class TestPortal:
       print 'name = %s' % item.name
       assert item.name != ''
 
-  def main_items_have_url_test(self):
+  def main_items_have_path_test(self):
     for item in self.feed.items:
-      print 'url = %s' % item.url
-      assert item.url != ''
+      print 'url = %s' % item.path
+      assert item.path != ''

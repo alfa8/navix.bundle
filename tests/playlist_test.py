@@ -15,7 +15,7 @@ class TestPortalPlaylists:
 
   def have_required_attributes_test(self):
     for item in self.feed.items:
-      content = urllib2.urlopen(item.url).read()
+      content = urllib2.urlopen(item.path).read()
       feed = Feed(content)
       yield self.check_single_feed, feed
 
@@ -26,4 +26,4 @@ class TestPortalPlaylists:
     for item in feed.items:
       assert item.type != ''
       assert item.name != ''
-      assert item.url != ''
+      assert item.path != ''

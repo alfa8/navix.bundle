@@ -1,11 +1,15 @@
-from default import *
-from tools import *
+#from default import *
+#from tools import *
 
 #Module specific Imports
 import traceback
 import urllib
 
 from urllib import quote_plus
+
+from utils.utils import Log, urlopen
+
+import re
 
 ######
 ### NIPL
@@ -19,6 +23,7 @@ class NIPL:
     def __init__(self, app, item, phase, datalist):
         Log(app, 'NAVI-X NIPL: Init.... phase ' + str(phase))
 
+        self.depth = 0
         #init vars
         self.__app__ = app
         self.__item__ = item
@@ -41,6 +46,7 @@ class NIPL:
         self.swfVfy = ''
         self.referer = ''
         self.player = item.player
+        self.live = ''
 
         self.verbose = 0
         self.regex = ''
@@ -133,8 +139,10 @@ class NIPL:
         for line in self.__datalist__:
             if self._pass: continue
             if self.verbose > 1 or self.__app__.debug:
-                if not self.skip: print 'NAVI-X NIPL: EXEC Line - ' + str(line)
-                else: print 'NAVI-X NIPL: SKIP Line - ' + str(line)
+                if not self.skip:
+                    print 'NAVI-X NIPL: EXEC Line - ' + str(line)
+                else:
+                    print 'NAVI-X NIPL: SKIP Line - ' + str(line) + '----- skip:' + str(self.skip)
 
             try:
                 linelist = line.split(' ')
@@ -194,6 +202,7 @@ class NIPL:
         elif kwargs.get('var', False):
             var = kwargs.get('var')
             value = kwargs.get('value', '')
+            print '=======>>>> setting var %s to %s' % (var, value)
         else: return
 
         varsplit = var.split('.')
@@ -274,8 +283,12 @@ class NIPL:
         if len(splitdata) > 1:
             var1 = self.getValue(splitdata[0])
             var2 = self.getValue(splitdata[1])
-            try: self.setValue(var=splitdata[0], value=re.sub(self.regex, var2, var1))
-            except: self.setValue(var=splitdata[0], value=var1)
+
+            if self.regex != '':
+                try: self.setValue(var=splitdata[0], value=re.sub(self.regex, var2, var1))
+                except: self.setValue(var=splitdata[0], value=var1)
+            else:
+                self.setValue(var=splitdata[0], value=var1)
 
     def report(self):
         vars = ["".join([key,'=',quote_plus(item)]) for (key, item) in self.__matchresults__.items()]
@@ -351,8 +364,11 @@ class NIPL:
     ### OPERATOR FUNCTIONS
     #Operators functions from NIPL Script
     def _if(self, line):
+        self.depth += 1
         operators = ['<', '<=', '=','==', '>=', '>', '!=', '<>']
         match = [operator for operator in operators if operator in line]
+
+        print 'asdadasdasda %s ' % line
 
         if len(match) > 0:
             linedata = line.split(match[0])
@@ -385,11 +401,13 @@ class NIPL:
                 if var1 != var2: self.skip = False
                 else: self.skip = True
         else:
-            value = self.getValue(line.replace(' ',''))
-            if value != '' and value != '0':
-                self.skip = False
-            else:
-                self.skip = True
+            if not self.skip:
+                value = self.getValue(line.replace(' ',''))
+                #print '+ VALUE %s' % value
+                if value != '' and value != '0':
+                    self.skip = False
+                else:
+                    self.skip = True
         self._printv(2, 'IF CHECK RESULT - ' + str(not self.skip))
 
     def _elseif(self, line):
@@ -404,5 +422,7 @@ class NIPL:
         else: self.skip = True
 
     def _endif(self, line):
-        self.skip = False
-        self._printv(2, 'ENDIF')
+        if self.skip and self.depth <= 1:
+            self.skip = False
+            self._printv(2, 'ENDIF')
+        self.depth -= 1

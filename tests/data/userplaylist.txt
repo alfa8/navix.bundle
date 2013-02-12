@@ -1,0 +1,664 @@
+version=1
+title=Latest and hotest movies 720P and DVDSCR
+logo=http://kentonmagazine.com/wp-content/uploads/2012/12/Top-Movies-2012-copy.jpg
+description=Going to put the newest movies up here. all 720P or DVDscr and a few TS.
+When full 720P releases are out i will replace the DVDSCR or TS with the full 720P release
+Please check out my other great playlists/description
+
+type=playlist
+name=Sorted [COLOR=FF00FF00]by user-assigned order[/COLOR]
+icon=http://www.navixtreme.com.nyud.net/images/icons/2downarrow.png
+URL=http://www.navixtreme.com/playlist/99196/latest_and_hotest_movies_720p_and_dvdscr.plx?action=sortsel&cur=ord
+
+# 1560547
+type=video
+name=Abraham Lincoln Vampire Hunter 2012 720P
+thumb=http://upload.wikimedia.org/wikipedia/en/thumb/b/b9/Abraham_Lincoln_-_Vampire_Hunter_Poster.jpg/220px-Abraham_Lincoln_-_Vampire_Hunter_Poster.jpg
+date=2013-02-08
+URL=http://180upload.com/sqvifzlisnra
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543351
+type=video
+name=The Amazing Spiderman 1080P 5.1
+URL=http://180upload.com/u0hl47g5co47
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1561506
+type=video
+name=American Pie Reunion unrated DD5.1 720P
+date=2013-02-09
+URL=http://180upload.com/ny507fefm5yg
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1554862
+type=video
+name=Argo 2012 720P
+thumb=http://upload.wikimedia.org/wikipedia/en/e/e1/Argo2012Poster.jpg
+date=2013-02-04
+URL=http://180upload.com/wdzr7jhjkjim
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543381
+type=video
+name=The Avengers 720P DD5.1
+URL=http://180upload.com/k9bwkn60g5x5
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1553422
+type=video
+name=Beauty and the Beast 3D (1080p)
+date=2013-02-04
+URL=http://BillionUploads.com/e94dkjdm9jrn
+processor=http://scrape.navixtreme.com/cgi-bin/boseman/Processors/billionuploads
+player=default
+rating=-1.00
+
+# 1560546
+type=video
+name=The Bourne Legacy 2012 720P
+date=2013-02-08
+URL=http://180upload.com/k756ufzu1078
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555905
+type=video
+name=Cloud Atlas 720P
+thumb=http://upload.wikimedia.org/wikipedia/en/2/20/Cloud_Atlas_Poster.jpg
+date=2013-02-05
+URL=http://180upload.com/eu06b6bgcj18
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1553399
+type=video
+name=Dark Knight Rises 2012 720P
+date=2013-02-04
+URL=http://180upload.com/bnozmoc5nka4
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543379
+type=video
+name=Diary of a Whimpy Kid Dog Days 720P
+URL=http://180upload.com/k9bwkn60g5x5
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1549646
+type=video
+name=Django Unchained 2012 DVDSCR
+URL=http://180upload.com/at226149q9l4
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1561508
+type=video
+name=Extracted (Extraction) 720P
+thumb=http://ecx.images-amazon.com/images/I/51JiyFNZPNL._SL500_AA300_.jpg
+date=2013-02-09
+URL=http://180upload.com/j00d0r8i2wws
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555781
+type=video
+name=The Five Year Engagement unrated 2012 720P
+date=2013-02-05
+URL=http://180upload.com/yb7oee78fipr
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1553400
+type=video
+name=Flight 2012 720P
+date=2013-02-04
+URL=http://180upload.com/3tvwps2ejxln
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1560545
+type=video
+name=Frankenweenie 720P
+date=2013-02-08
+URL=http://180upload.com/te5o1jq8uyo4
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1557382
+type=video
+name=Fun Size 2012 (720P)
+date=2013-02-07
+URL=http://180upload.com/d3rxw5vektbm
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1549640
+type=video
+name=Gangster Squad TS 720P
+URL=http://180upload.com/ujqrwho0v1x6
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543382
+type=playlist
+name=Great 80s Movies 720P HD many in DD 5.1
+URL=http://www.navixtreme.com/playlist/78394/great_80s_movies_720p_hd_many_in_dd_5.1.plx
+player=default
+rating=-1.00
+
+# 1560872
+type=video
+name=Hello I must be Going 2012 720P
+date=2013-02-09
+URL=http://180upload.com/5jgunxa8t5u1
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1545567
+type=video
+name=Here Comes the Boom 2012 720P
+URL=http://180upload.com/6vto6y56m0xb
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1560844
+type=video
+name=Hit and Run 720P
+date=2013-02-09
+URL=http://180upload.com/5isanz4sd156
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1545013
+type=video
+name=Hitchcock 2012 (DVDSCR DD5.1)
+URL=http://180upload.com/taui4l0jngrk
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543049
+type=video
+name=The Hobit (2012) DVDSCR
+URL=http://180upload.com/3v8z4sgcbwxj
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543048
+type=video
+name=Hotel Translyvania 720P
+URL=http://180upload.com/6vs6912p6jo3
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543047
+type=video
+name=Ice Age Continental Drift 720P
+URL=http://180upload.com/0psn8nla2g16
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1545564
+type=video
+name=The Impossible DVDSCR
+URL=http://180upload.com/ufk1p59rbsnx
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1561503
+type=video
+name=Jack Reacher (TS)
+date=2013-02-09
+URL=http://180upload.com/7sz63dsawvtf
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1560876
+type=video
+name=John Dies in the End 2012 720P
+date=2013-02-09
+URL=http://180upload.com/17wrhozzbkxd
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1553402
+type=video
+name=Journey 2 The Mysterious Island 2012 720P
+date=2013-02-04
+URL=http://180upload.com/nwhwrh31syy0
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1545563
+type=video
+name=Les Miserables 2012 DVDSCR DD
+URL=http://180upload.com/fxoa5hp4z3nt
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543350
+type=video
+name=Life Of Pie DVD
+URL=http://180upload.com/uaq6nf455n2l
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1553420
+type=video
+name=Life of Pie DVD
+date=2013-02-04
+URL=http://BillionUploads.com/ztdmyuxgeisw
+processor=http://scrape.navixtreme.com/cgi-bin/boseman/Processors/billionuploads
+player=default
+rating=-1.00
+
+# 1545566
+type=video
+name=Lincoln DVDSCR
+URL=http://180upload.com/1jerxontnr5e
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1556289
+type=video
+name=Looper 720P
+date=2013-02-06
+URL=http://180upload.com/j47ivfb39k6u
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543766
+type=video
+name=Madagascar 3 Europes Most Wanted 720P
+URL=http://180upload.com/mniscmavu8rs
+processor=http://www.navixtreme.com/justme4u2c/processors/ESPN_Deportes.php
+player=default
+rating=-1.00
+
+# 1561509
+type=video
+name=The Makeover 2012 720P
+date=2013-02-09
+URL=http://180upload.com/rosi00ew9jyx
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555773
+type=video
+name=The Man with the Iron Fists Unrated edition (2012) 720P
+date=2013-02-05
+URL=http://180upload.com/1irf1exju96z
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1556294
+type=video
+name=The Master 2012 720P
+date=2013-02-06
+URL=http://180upload.com/juwhwrn29rno
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1561505
+type=video
+name=Maximum Conviction 2012 720P
+date=2013-02-09
+URL=http://180upload.com/8ejou2wswrhs
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543767
+type=video
+name=Mirror Mirror 2012 720P
+URL=http://180upload.com/pf90h0pn24h4
+processor=http://www.navixtreme.com/justme4u2c/processors/ESPN_Deportes.php
+player=default
+rating=-1.00
+
+# 1560549
+type=video
+name=Moonrise Kingdom 720P DD5.1
+date=2013-02-08
+URL=http://180upload.com/3xzd3rngm20e
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1561504
+type=video
+name=Noobz 2012 720P
+date=2013-02-09
+URL=http://180upload.com/68eji4iu0nmx
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1559168
+type=video
+name=The Odd Life of Timothy Green 720P
+date=2013-02-08
+URL=http://180upload.com/38iq1itmopgd
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1557381
+type=video
+name=The Package 2012 720P
+date=2013-02-07
+URL=http://180upload.com/feyb7pvjuz8k
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1549589
+type=video
+name=Paranormal Activity 4 Unrated Directors Cut 720p
+URL=http://180upload.com/knijf69godpp
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1553401
+type=video
+name=Paranorman 2012 720P
+date=2013-02-04
+URL=http://180upload.com/ssshajxvwrpn
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1553421
+type=video
+name=Paranorman 2012 720P
+date=2013-02-04
+URL=http://BillionUploads.com/jrqgwy9116os
+processor=http://scrape.navixtreme.com/cgi-bin/boseman/Processors/billionuploads
+player=default
+rating=-1.00
+
+# 1555272
+type=video
+name=Parker 2012 (TS)
+date=2013-02-05
+URL=http://180upload.com/gmk3eddq10gb
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555776
+type=video
+name=The Perks of Being a Wallflower 2012 (720p)
+date=2013-02-05
+URL=http://180upload.com/4sbq02wu0tyl
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1545565
+type=video
+name=The Pirates Band of Misfits 720P
+URL=http://180upload.com/kiyple9fe1ku
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1554390
+type=video
+name=Pitch Perfect 720P
+date=2013-02-04
+URL=http://180upload.com/hujgciwbgjln
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555903
+type=video
+name=Premium Rush 720P
+date=2013-02-05
+URL=http://180upload.com/h8jbzugzqlgg
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1560548
+type=video
+name=Prometheus 2012 720P AAC5.1
+date=2013-02-08
+URL=http://180upload.com/ejy8ar57gjk7
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1549590
+type=video
+name=Promised Land 2012 DVDSCR
+URL=http://180upload.com/c2fhpix6n2ux
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1561507
+type=video
+name=Seven Phychopaths 2012 720P
+date=2013-02-09
+URL=http://180upload.com/mdj9lk2odl20
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1545562
+type=video
+name=Silver Linings Playbook DVD
+URL=http://180upload.com/ubmsyymet20c
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555273
+type=video
+name=Skyfall 720P
+date=2013-02-05
+URL=http://180upload.com/loldbh4pv1ox
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543352
+type=video
+name=Stand Up Guys DVDSCR DD5.1
+URL=http://180upload.com/9ur34eh3dmgs
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1554385
+type=video
+name=Stand Up Guys DVDSCR DD5.1
+date=2013-02-04
+URL=http://BillionUploads.com/ynzl5rz6dbi6
+processor=http://scrape.navixtreme.com/cgi-bin/boseman/Processors/billionuploads
+player=default
+rating=-1.00
+
+# 1559167
+type=video
+name=Step Up Revolution 720P
+date=2013-02-08
+URL=http://180upload.com/qpm5gucapkpc
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1560875
+type=video
+name=Struck By Lightning 2012 720P
+date=2013-02-09
+URL=http://180upload.com/btjl726twyyj
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1561510
+type=video
+name=The Survival Games 720P
+date=2013-02-09
+URL=http://180upload.com/97jv22rgqeqf
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555274
+type=video
+name=Taken 2 Unrated Extended Edition 720P
+date=2013-02-05
+URL=http://180upload.com/7ltmnwk9vy64
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555778
+type=video
+name=TED 720P
+date=2013-02-05
+URL=http://180upload.com/vdt2l1ywsw3p
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1557383
+type=video
+name=This is 40 (DVDSCR)
+date=2013-02-07
+URL=http://180upload.com/5yuhcq5fbq3u
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555784
+type=video
+name=The Three Stooges 2012 720P
+date=2013-02-05
+URL=http://180upload.com/3ukwreysyvgm
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555767
+type=video
+name=Total Recall Extended 2012 720P
+date=2013-02-05
+URL=http://180upload.com/y9ssba7889b3
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543050
+type=video
+name=The Twlight Saga Breaking Dawn Part 2 (TS)
+URL=http://180upload.com/9got2ohwkmr8
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1556288
+type=video
+name=Universal Soldier Day of Reckoning 720P
+date=2013-02-06
+URL=http://180upload.com/r4tgxrufruan
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1555769
+type=video
+name=Upside Down (2012) 720P
+date=2013-02-05
+URL=http://180upload.com/9tmgv7tkq2jm
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543253
+type=video
+name=Wreck It Ralph DVDSCR
+URL=http://180upload.com/an6i4lcqf4fb
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1554386
+type=video
+name=Wreck It Ralph DVDSCR
+date=2013-02-04
+URL=http://BillionUploads.com/085keccyimxe
+processor=http://scrape.navixtreme.com/cgi-bin/boseman/Processors/billionuploads
+player=default
+rating=-1.00
+
+# 1559163
+type=video
+name=You May Not Kiss the Bride 720P DD5.1
+date=2013-02-08
+URL=http://180upload.com/xy11k587vhzj
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00
+
+# 1543768
+type=video
+name=Zero Dark Thirty 2012 DVDSCR
+URL=http://180upload.com/f5vp7t7doh3m
+processor=http://www.navixtreme.com/justme4u2c/processors/ESPN_Deportes.php
+player=default
+rating=-1.00
+
+# 1560870
+type=video
+name=Zookeeper 720P
+date=2013-02-09
+URL=http://180upload.com/9c8abmyo4pb7
+processor=http://www.navixtreme.com/proc/180upload
+player=default
+rating=-1.00

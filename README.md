@@ -16,5 +16,5 @@ Todo:
 - Enable the portal/playlist unit tests to also work on local files
 
 Acknowledgements:
-Original code copied from: https://github.com/jcoffman/NaviPlex
-NIPL parser copied from: http://code.google.com/p/navi-x/source/browse/trunk/Navi-X%20BOXEE/beta/com.navix.main/source/libs/nipl.py
+- Original code copied from: https://github.com/jcoffman/NaviPlex
+- NIPL parser copied from: http://code.google.com/p/navi-x/source/browse/trunk/Navi-X%20BOXEE/beta/com.navix.main/source/libs/nipl.py
