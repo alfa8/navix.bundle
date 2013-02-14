@@ -19,15 +19,24 @@ class Feed:
   def __init__(self, content):
 
     self.items = []
-    self.version = re.search(self.regv, content, re.M).group(1)
-    self.title = re.search(self.regt, content, re.M).group(1)
-    self.background = re.search(self.regb, content, re.M).group(1)
+
+    title = re.search(self.regt, content, re.M)
+    if title is not None:
+      self.title = title.group(1)
+
+    version = re.search(self.regv, content, re.M)
+    if version is not None:
+      self.version = version.group(1)
 
     logo = re.search(self.regl, content, re.M)
     if logo is not None:
       self.logo = logo.group(1)
 
-    reg = "^type=playlist"
+    background = re.search(self.regb, content, re.M)
+    if background is not None:
+      self.background = background.group(1)
+
+    reg = "^type="
 
     matches = re.finditer(reg, content, re.M)
     if matches == None:

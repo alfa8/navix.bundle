@@ -7,7 +7,7 @@ import urllib
 
 from urllib import quote_plus
 
-from utils.utils import Log, urlopen
+from utils.utils import urlopen
 
 import re
 
@@ -21,7 +21,7 @@ import re
 class NIPL:
     ### Init
     def __init__(self, app, item, phase, datalist):
-        Log(app, 'NAVI-X NIPL: Init.... phase ' + str(phase))
+        #log('NAVI-X NIPL: Init.... phase ' + str(phase))
 
         self.depth = 0
         #init vars
@@ -142,7 +142,7 @@ class NIPL:
                 if not self.skip:
                     print 'NAVI-X NIPL: EXEC Line - ' + str(line)
                 else:
-                    print 'NAVI-X NIPL: SKIP Line - ' + str(line) + '----- skip:' + str(self.skip)
+                    print 'NAVI-X NIPL: SKIP Line - ' + str(line)
 
             try:
                 linelist = line.split(' ')
@@ -163,7 +163,7 @@ class NIPL:
                     continue
 
                 self.setValue(line=line)
-            except: Log(self.__app__, traceback.format_exc() )
+            except: pass#log(traceback.format_exc() )
 
         self.saveCache()
         self.saveNookie()
@@ -202,7 +202,6 @@ class NIPL:
         elif kwargs.get('var', False):
             var = kwargs.get('var')
             value = kwargs.get('value', '')
-            print '=======>>>> setting var %s to %s' % (var, value)
         else: return
 
         varsplit = var.split('.')
@@ -266,7 +265,9 @@ class NIPL:
         else:
             for i in xrange(10):
                 var = "".join(['v', str(i+1)])
-                del vars(self)[var]
+                namespace_vars = dict(vars(self))
+                if var in namespace_vars:
+                    del vars(self)[var]
             self.nomatch = '1'
 
     def play(self):
@@ -368,8 +369,6 @@ class NIPL:
         operators = ['<', '<=', '=','==', '>=', '>', '!=', '<>']
         match = [operator for operator in operators if operator in line]
 
-        print 'asdadasdasda %s ' % line
-
         if len(match) > 0:
             linedata = line.split(match[0])
             var1 = self.getValue(linedata[0])
@@ -403,7 +402,6 @@ class NIPL:
         else:
             if not self.skip:
                 value = self.getValue(line.replace(' ',''))
-                #print '+ VALUE %s' % value
                 if value != '' and value != '0':
                     self.skip = False
                 else:

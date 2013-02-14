@@ -4,16 +4,20 @@ import urllib2
 
 from portal.feed import *
 from processor.nipl import *
+from utils.utils import *
 
 class TestNipl:
 
   content = """type=video
-name=Sherlock Holmes (2009) 720p
-thumb=http://lookpic.com/i/521/PonFMAUl.jpeg
-URL=http://180upload.com/sx53nqrx6t15
-processor=http://www.navixtreme.com/proc/180upload
+name=Cosmopolis HD
+thumb=http://ia.media-imdb.com/images/M/MV5BMTY1NjI0MDYyNV5BMl5BanBnXkFtZTcwNDIzMDEyOA@@._V1_SX500_SY999_.jpg
+date=2013-02-12
+URL=http://movreel.com/iugst07me2j8
+processor=http://scrape.navixtreme.com/cgi-bin/boseman/Processors/movreel
 player=default
-rating=-1.00"""
+rating=-1.00
+description=Riding across Manhattan in a stretch limo in order to get a haircut, a 28-year-old billionaire asset manager's day devolves into an odyssey with a cast of characters that start to tear his world apart./description
+"""
 
   def video_feed_item_has_required_attributes_test(self):
 

@@ -5,11 +5,11 @@
     <key>CFBundleExecutable</key>
     <string>Hello</string>
     <key>CFBundleIdentifier</key>
-    <string>com.plexapp.plugins.fabrikater.navi-x</string>
+    <string>com.plexapp.plugins.navi-x</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>PlexFrameworkVersion</key>
-    <string>1</string>
+    <string>2</string>
     <key>CFBundlePackageType</key>
     <string>AAPL</string>
     <key>CFBundleSignature</key>
@@ -20,5 +20,7 @@
     <string>AlwaysOn</string>
     <key>PlexPluginDebug</key>
     <string>1</string>
+    <key>PlexPluginCodePolicy</key>
+    <string>Elevated</string>
   </dict>
 </plist>
