@@ -28,11 +28,8 @@ def Start():
   ObjectContainer.title1 = TITLE
   ObjectContainer.art = R(ART)
   DirectoryObject.thumb = R(ICON)
-  DirectoryObject.art = R(ART)
   NextPageObject.thumb = R(ICON)
-  NextPageObject.art = R(ART)
   VideoClipObject.thumb = R(ICON)
-  VideoClipObject.art = R(ART)
 
   #Causes issues with retrieval...must be xml blah blah... suckie suckie...
   #HTTP.CacheTime = CACHE_1HOUR
