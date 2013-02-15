@@ -126,18 +126,12 @@ def Process(url, processor, title, summary):
   if result is not None:
     oc = ObjectContainer()
 
-    # oc.add(
-    #   MovieObject(
-    #     key = Callback(Playable, url = item.playurl, title = title),
-    #     rating_key = title,
-    #     items = [ MediaObject(parts = [PartObject(key = item.playurl)], protocol = 'HTTPMP4Video', container = Container.MP4) ])
-    # )
-
     oc.add(
       MovieObject(
         key = Callback(Playable, url = item.playurl, title = title),
         rating_key = title,
-        items = [ MediaObject(parts = [PartObject(key = WindowsMediaVideoURL(item.playurl))], protocol = 'HTTPMP4Video', container = Container.MP4) ])
+        items = [ MediaObject(parts = [ PartObject(key = url) ]) ]
+      )
     )
 
     Log.Debug('from process: returning oc for %s, url %s' % (title, item.playurl))
@@ -147,39 +141,15 @@ def Process(url, processor, title, summary):
 def Playable(url, title):
   oc = ObjectContainer()
 
-  # oc.add(
-  #   MovieObject(
-  #     key = Callback(Playable, url = url, title = title),
-  #     rating_key = title,
-  #     items = [ MediaObject(parts = [PartObject(key = url)], protocol = 'HTTPMP4Video', container = Container.MP4) ])
-  # )
-
   oc.add(
     MovieObject(
       key = Callback(Playable, url = url, title = title),
       rating_key = title,
-      items = [ MediaObject(parts = [PartObject(key = WindowsMediaVideoURL(url))], protocol = 'HTTPMP4Video', container = Container.MP4) ])
+      items = [ MediaObject(parts = [ PartObject(key = url) ]) ]
+    )
   )
 
   Log.Debug('from playable: returning oc for %s, url %s' % (title, url))
-  return oc
-
-@route('/video/navi-x-plex/play')
-def PlayVideo(url, title):
-  oc = ObjectContainer()
-
-  oc.add(VideoClipObject(
-    key = Callback(Playable, url = url, title = title),
-    rating_key = title,
-    items = [
-      MediaObject(
-        parts = [PartObject(key = url)],
-        protocol = 'HTTPMP4Video',
-        container = Container.MP4)
-    ]
-  ))
-
-  Log.Debug('from playvideo: returning oc with videoclip for %s, url %s' % (title, url))
   return oc
 
 def GetContents(url):
