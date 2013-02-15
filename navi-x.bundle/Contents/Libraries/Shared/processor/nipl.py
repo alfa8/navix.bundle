@@ -10,6 +10,7 @@ from urllib import quote_plus
 from utils.utils import urlopen
 
 import re
+#import Framework
 
 ######
 ### NIPL
@@ -20,8 +21,10 @@ import re
 ### Class to process navi-x NIPL scripts
 class NIPL:
     ### Init
-    def __init__(self, app, item, phase, datalist):
-        #log('NAVI-X NIPL: Init.... phase ' + str(phase))
+    def __init__(self, app, item, phase, datalist, Log):
+
+        self.Log = Log
+        self.Log.Debug('NAVI-X NIPL: Init.... phase ' + str(phase))
 
         self.depth = 0
         #init vars
@@ -140,9 +143,9 @@ class NIPL:
             if self._pass: continue
             if self.verbose > 1 or self.__app__.debug:
                 if not self.skip:
-                    print 'NAVI-X NIPL: EXEC Line - ' + str(line)
+                    self.Log.Debug('NAVI-X NIPL: EXEC Line - ' + str(line))
                 else:
-                    print 'NAVI-X NIPL: SKIP Line - ' + str(line)
+                    self.Log.Debug('NAVI-X NIPL: SKIP Line - ' + str(line))
 
             try:
                 linelist = line.split(' ')
@@ -163,7 +166,7 @@ class NIPL:
                     continue
 
                 self.setValue(line=line)
-            except: pass#log(traceback.format_exc() )
+            except: self.Log.Exception('unable to twist nipl')
 
         self.saveCache()
         self.saveNookie()
@@ -225,7 +228,7 @@ class NIPL:
     def debug(self, line):
         if self.verbose > 0:
             var1 = self.getValue(line)
-            try: print " ".join(['NAVI-X NIPL: ', str(line), '=', str(var1)])
+            try: self.Log.Debug(" ".join(['NAVI-X NIPL: ', str(line), '=', str(var1)]))
             except: pass
 
     def escape(self, line):
@@ -235,14 +238,14 @@ class NIPL:
 
     def _print(self, line):
         var1 = self.getValue(line)
-        print " ".join(['NAVI-X NIPL: ', str(line), '=', str(var1)])
+        self.Log.Debug(" ".join(['NAVI-X NIPL: ', str(line), '=', str(var1)]))
 
 
     def error(self, line):
         self._pass = True
         var1 = self.getValue(line)
         self._error = str(var1)
-        print 'NAVI-X NIPL: Error! %s' %str(var1)
+        self.Log.Error('NAVI-X NIPL: Error! %s' %str(var1))
 
 
     def match(self, line):
@@ -318,7 +321,7 @@ class NIPL:
 
     def _printv(self, i, string):
         if self.verbose >= i or self.__app__.debug:
-            print 'NAVI-X NIPL: %s' % string
+            self.Log.Debug('NAVI-X NIPL: %s' % string)
 
     def scrape(self):
         url_vars = {

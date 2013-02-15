@@ -84,7 +84,7 @@ def SubMenu(title, url):
       art = R(ART)
 
     if item.type == "video":
-      oc.add(MovieObject(key = Callback(PressPlayOnTape, url = item.path, processor = item.processor), rating_key = item.name, title = item.name, tagline = '', summary = item.description, thumb = thumb, art = art))
+      oc.add(MovieObject(key = Callback(Process, url = item.path, processor = item.processor, title = item.name, summary = item.description), rating_key = item.name, title = item.name, summary = item.description, thumb = thumb, art = art))
     elif item.type == 'playlist':
       oc.add(DirectoryObject(key = Callback(SubMenu, title = item.name, url = item.path), title = item.name, tagline = '', summary = item.description, thumb = thumb, art = art))
     else:
@@ -92,8 +92,8 @@ def SubMenu(title, url):
 
   return oc
 
-@route('/video/navi-x-plex/submenu/press-play-on-tape')
-def PressPlayOnTape(url, processor):
+@route('/video/navi-x-plex/submenu/process')
+def Process(url, processor, title, summary):
   #i think callback can only pass on primitives, therefore we reconstruct the object here
   item = FeedItem('')
   item.path = url
@@ -118,36 +118,69 @@ def PressPlayOnTape(url, processor):
       htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
       datalist = htmRaw.replace('\t','').split('\n')
 
+  result = None
   if datalist[0] == 'v2':
-      nipl = NIPL(app, item, 0, datalist)
-      return nipl.process()
-  elif 'http' in datalist[0]:
-      return self.PROCESS(item, datalist)
+      nipl = NIPL(app, item, 0, datalist, Log)
+      result = nipl.process()
 
-  def PROCESS(self, item, datalist):
-    url = datalist[0]
-    regex = datalist[1]
+  if result is not None:
+    oc = ObjectContainer()
 
-    rawpage = urlopen(app, url, {'action':'read'})
-    try: results = re.compile(regex).findall(rawpage['content'])
-    except:
-        Log(traceback.format_exc())
-        results = []
+    # oc.add(
+    #   MovieObject(
+    #     key = Callback(Playable, url = item.playurl, title = title),
+    #     rating_key = title,
+    #     items = [ MediaObject(parts = [PartObject(key = item.playurl)], protocol = 'HTTPMP4Video', container = Container.MP4) ])
+    # )
 
-    if len(results) > 0:
-        vars = ["".join(['v', str(i+1),'=', urllib.quote_plus(value), '&']) for i, value in enumerate(results)]
-        url = "".join([item.processor, '?', "&".join(vars) ])
-        rawdata = urlopen(app, str(url), {'cookie':'version=1.'+str(app.navi_sub_version)+'; platform=plexapp'})
-        try: path = rawdata['content'].readline()
-        except: path = ''
-        rawdata['content'].close()
+    oc.add(
+      MovieObject(
+        key = Callback(Playable, url = item.playurl, title = title),
+        rating_key = title,
+        items = [ MediaObject(parts = [PartObject(key = WindowsMediaVideoURL(item.playurl))], protocol = 'HTTPMP4Video', container = Container.MP4) ])
+    )
 
-        Log('NAVI-X PROCESS: Path - ' + path)
+    Log.Debug('from process: returning oc for %s, url %s' % (title, item.playurl))
+    return oc
 
-        item.setVar('path', path)
-        return item
-    else: return item
+@route('/video/navi-x-plex/playable')
+def Playable(url, title):
+  oc = ObjectContainer()
 
+  # oc.add(
+  #   MovieObject(
+  #     key = Callback(Playable, url = url, title = title),
+  #     rating_key = title,
+  #     items = [ MediaObject(parts = [PartObject(key = url)], protocol = 'HTTPMP4Video', container = Container.MP4) ])
+  # )
+
+  oc.add(
+    MovieObject(
+      key = Callback(Playable, url = url, title = title),
+      rating_key = title,
+      items = [ MediaObject(parts = [PartObject(key = WindowsMediaVideoURL(url))], protocol = 'HTTPMP4Video', container = Container.MP4) ])
+  )
+
+  Log.Debug('from playable: returning oc for %s, url %s' % (title, url))
+  return oc
+
+@route('/video/navi-x-plex/play')
+def PlayVideo(url, title):
+  oc = ObjectContainer()
+
+  oc.add(VideoClipObject(
+    key = Callback(Playable, url = url, title = title),
+    rating_key = title,
+    items = [
+      MediaObject(
+        parts = [PartObject(key = url)],
+        protocol = 'HTTPMP4Video',
+        container = Container.MP4)
+    ]
+  ))
+
+  Log.Debug('from playvideo: returning oc with videoclip for %s, url %s' % (title, url))
+  return oc
 
 def GetContents(url):
   Log("requesting url: " + url.strip())

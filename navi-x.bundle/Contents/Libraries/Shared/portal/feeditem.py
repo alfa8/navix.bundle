@@ -27,6 +27,7 @@ class FeedItem:
   v1 = ''
   v2 = ''
   live = ''
+  player = ''
 
   def __init__(self, content):
 
