@@ -1,5 +1,4 @@
 import urllib
-
 import socket
 import urllib2
 
@@ -35,7 +34,7 @@ def Start():
   VideoClipObject.art = R(ART)
 
   #Causes issues with retrieval...must be xml blah blah... suckie suckie...
-  #HTTP.CacheTime = CACHE_1HOUR
+  HTTP.CacheTime = CACHE_1HOUR
 
 @handler(VIDEO_PREFIX, TITLE, art = ART, thumb = ICON)
 def MainMenu():
@@ -58,12 +57,14 @@ def MainMenu():
     else:
       art = R(ART)
 
-    oc.add(DirectoryObject(key = Callback(SubMenu, title = item.name, url = item.path), title = item.name, tagline = '', summary = item.description, thumb = item.thumb, art = R(ART)))
+    title = clean(item.name)
+
+    oc.add(DirectoryObject(key = Callback(Playlist, title = title, url = item.path), title = title, tagline = '', summary = item.description, thumb = thumb, art = art))
 
   return oc
 
-@route('/video/navi-x-plex/submenu')
-def SubMenu(title, url):
+@route('/video/navi-x-plex/playlist/{title}')
+def Playlist(title, url):
 
   oc = ObjectContainer(title2 = title, view_group = "List")
 
@@ -83,16 +84,18 @@ def SubMenu(title, url):
     else:
       art = R(ART)
 
+    title = clean(item.name)
+
     if item.type == "video":
-      oc.add(MovieObject(key = Callback(Process, url = item.path, processor = item.processor, title = item.name, summary = item.description), rating_key = item.name, title = item.name, summary = item.description, thumb = thumb, art = art))
+      oc.add(MovieObject(key = Callback(Process, url = item.path, processor = item.processor, title = title, summary = item.description), rating_key = title, title = title, summary = item.description, thumb = thumb, art = art))
     elif item.type == 'playlist':
-      oc.add(DirectoryObject(key = Callback(SubMenu, title = item.name, url = item.path), title = item.name, tagline = '', summary = item.description, thumb = thumb, art = art))
+      oc.add(DirectoryObject(key = Callback(Playlist, title = title, url = item.path), title = title, tagline = '', summary = item.description, thumb = thumb, art = art))
     else:
       continue
 
   return oc
 
-@route('/video/navi-x-plex/submenu/process')
+@route('/video/navi-x-plex/playlist/process/{title}')
 def Process(url, processor, title, summary):
   #i think callback can only pass on primitives, therefore we reconstruct the object here
   item = FeedItem('')
@@ -109,43 +112,63 @@ def Process(url, processor, title, summary):
   Log('NAVI-X: Get Processor for: ' + item.path)
   data = app.storage.get(url)
   if data:
-      datalist = data
+    datalist = data
   else:
-      #phase 1 retreive processor data
-      rawdata = urlopen(app, str(url), {'cookie':'version=1.'+str(app.navi_sub_version)+'; platform=plexapp', 'action':'read'})
-      htmRaw = rawdata['content']
-      htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
-      htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
-      datalist = htmRaw.replace('\t','').split('\n')
+    #phase 1 retreive processor data
+    rawdata = urlopen(app, str(url), {'cookie':'version=1.'+str(app.navi_sub_version)+'; platform=plexapp', 'action':'read'})
+    htmRaw = rawdata['content']
+    htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
+    htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
+    datalist = htmRaw.replace('\t','').split('\n')
 
   result = None
   if datalist[0] == 'v2':
-      nipl = NIPL(app, item, 0, datalist, Log)
-      result = nipl.process()
+    nipl = NIPL(app, item, 0, datalist, Log)
+    result = nipl.process()
 
   if result is not None:
-    oc = ObjectContainer()
+    oc = ObjectContainer(content = ContainerContent.Movies, user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.4) Gecko/2008102920 Firefox/3.0.4')
 
     oc.add(
       MovieObject(
         key = Callback(Playable, url = item.playurl, title = title),
         rating_key = title,
-        items = [ MediaObject(parts = [ PartObject(key = url) ]) ]
+        items = [
+          MediaObject(
+            parts =
+              [
+                PartObject(key = item.playurl)
+              ],
+            container = Container.MP4,
+            video_codec = VideoCodec.H264,
+            audio_codec = AudioCodec.AAC,
+            audio_channels = 2)
+        ]
       )
     )
 
     Log.Debug('from process: returning oc for %s, url %s' % (title, item.playurl))
     return oc
 
-@route('/video/navi-x-plex/playable')
+@route('/video/navi-x-plex/playable/{title}')
 def Playable(url, title):
-  oc = ObjectContainer()
+  oc = ObjectContainer(content = ContainerContent.Movies, user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.4) Gecko/2008102920 Firefox/3.0.4')
 
   oc.add(
     MovieObject(
       key = Callback(Playable, url = url, title = title),
       rating_key = title,
-      items = [ MediaObject(parts = [ PartObject(key = url) ]) ]
+      items = [
+        MediaObject(
+          parts =
+            [
+              PartObject(key = url)
+            ],
+          container = Container.MP4,
+          video_codec = VideoCodec.H264,
+          audio_codec = AudioCodec.AAC,
+          audio_channels = 2)
+      ]
     )
   )
 
@@ -156,11 +179,16 @@ def GetContents(url):
   Log("requesting url: " + url.strip())
   playlist = ""
   try:
-    playlist = HTTP.Request(url.strip())
+    playlist = HTTP.Request(url.strip(), timeout = 100000)
   except:
     Log("error fetching playlist")
   #Log(playlist)
   return str(playlist)
+
+def clean(text):
+  s = String.StripDiacritics(text)
+
+  return s
 
 class FakeApp:
 
@@ -169,7 +197,7 @@ class FakeApp:
   navi_version = 1
   navi_sub_version = 1
   storage = None
-  url_open_timeout = 100000
+  url_open_timeout = 700000
 
   def __init__(self):
     self.storage = FakeStorage()
@@ -206,7 +234,7 @@ def urlopen(app, url, args={}):
       'postdata': '',
       'headers': {},
   }
-  Log(url)
+
   for ke in rdefaults:
       try:
           args[ke]
