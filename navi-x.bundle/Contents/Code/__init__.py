@@ -42,14 +42,14 @@ def Menu(title, url):
   feed = GetFeed(url)
 
   for item in feed.items:
-    if item.thumb != None:
+    if item.thumb != None and item.thumb.startswith('http://'):
       thumb = item.thumb
     else:
       thumb = R(ICON)
 
-    if item.icon != None:
-      art = item.icon
-    elif feed.background != None:
+    if item.background != None and item.background.startswith('http://'):
+      art = item.background
+    elif feed.background != None and feed.background.startswith('http://'):
       art = feed.background
     else:
       art = R(ART)
@@ -59,11 +59,13 @@ def Menu(title, url):
         url = item.path,
         processor = item.processor,
         title = item.name,
-        summary = item.description
+        summary = item.description,
+        thumb = thumb,
+        art = art
       ))
     elif item.type == 'playlist':
       oc.add(DirectoryObject(
-        key = Callback(SubMenu, title=item.name, url=item.path),
+        key = Callback(Menu, title=item.name, url=item.path),
         title = item.name,
         summary = item.description,
         thumb = thumb,
@@ -75,13 +77,15 @@ def Menu(title, url):
   return oc
 
 ####################################################################################################
-def CreateMovieObject(url, processor, title, summary, include_container=False):
+def CreateMovieObject(url, processor, title, summary, thumb, art, include_container=False):
 
   movie_obj = MovieObject(
-    key = Callback(CreateMovieObject, url=url, processor=processor, title=title, summary=summary, include_container=True),
+    key = Callback(CreateMovieObject, url=url, processor=processor, title=title, summary=summary, thumb=thumb, art=art, include_container=True),
     rating_key = url,
     title = title,
     summary = summary,
+    thumb = thumb,
+    art = art,
     items = [
       MediaObject(
         parts = [
