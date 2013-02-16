@@ -29,7 +29,7 @@ def Start():
   HTTP.CacheTime = CACHE_1HOUR
 
 ####################################################################################################
-@handler("/video/navi-x-plex", TITLE, art = ART, thumb = ICON)
+@handler("/video/navix", TITLE, art = ART, thumb = ICON)
 def MainMenu():
 
   oc = ObjectContainer()
@@ -55,7 +55,7 @@ def MainMenu():
   return oc
 
 ####################################################################################################
-@route('/video/navi-x-plex/submenu')
+@route('/video/navix/submenu')
 def SubMenu(title, url):
 
   oc = ObjectContainer(title2 = title)
