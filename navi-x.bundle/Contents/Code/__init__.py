@@ -11,7 +11,7 @@ from processor.nipl import *
 
 ####################################################################################################
 
-MAIN_URL = "http://www.navixtreme.com/playlists/med_port.plx"
+MAIN_URL = 'http://www.navixtreme.com/playlists/med_port.plx'
 TITLE    = L('Title')
 ART      = 'art-default.jpg'
 ICON     = 'icon-default.png'
@@ -29,49 +29,24 @@ def Start():
   HTTP.CacheTime = CACHE_1HOUR
 
 ####################################################################################################
-@handler("/video/navix", TITLE, art = ART, thumb = ICON)
+@handler('/video/navix', TITLE, art=ART, thumb=ICON)
 def MainMenu():
 
-  oc = ObjectContainer()
-  feed = GetFeed(MAIN_URL)
-
-  for item in feed.items:
-    if item.thumb != None:
-      thumb = item.thumb
-    else:
-      thumb = R(ICON)
-
-    if item.icon != None:
-      art = item.icon
-    elif feed.background != None:
-      art = feed.background
-    else:
-      art = R(ART)
-
-    oc.add(DirectoryObject(
-      key = Callback(SubMenu, title=item.name, url=item.path),
-      title = item.name,
-      summary = item.description,
-      thumb = thumb,
-      art = art
-    ))
-
-  return oc
+  return Menu(title=None, url=MAIN_URL)
 
 ####################################################################################################
-@route('/video/navix/submenu')
-def SubMenu(title, url):
+@route('/video/navix/menu')
+def Menu(title, url):
 
-  oc = ObjectContainer(title2 = title)
-
+  oc = ObjectContainer(title2=title)
   feed = GetFeed(url)
 
   for item in feed.items:
-
     if item.thumb != None:
       thumb = item.thumb
     else:
       thumb = R(ICON)
+
     if item.icon != None:
       art = item.icon
     elif feed.background != None:
@@ -79,13 +54,21 @@ def SubMenu(title, url):
     else:
       art = R(ART)
 
-    if item.type == "video":
-      Log("========")
-      Log(item.name)
-      Log(item.processor)
-      oc.add(CreateMovieObject(url=item.path, processor=item.processor, title=item.name, summary=item.description))
+    if item.type == 'video':
+      oc.add(CreateMovieObject(
+        url = item.path,
+        processor = item.processor,
+        title = item.name,
+        summary = item.description
+      ))
     elif item.type == 'playlist':
-      oc.add(DirectoryObject(key = Callback(SubMenu, title = item.name, url = item.path), title = item.name, tagline = '', summary = item.description, thumb = thumb, art = art))
+      oc.add(DirectoryObject(
+        key = Callback(SubMenu, title=item.name, url=item.path),
+        title = item.name,
+        summary = item.description,
+        thumb = thumb,
+        art = art
+      ))
     else:
       continue
 
@@ -135,8 +118,9 @@ def PlayVideo(url, processor):
   app = FakeApp()
 
   #phase 1 retreive processor data
-  url = "".join([processor, '?url=', String.Quote(url, usePlus=True), '&phase=0'])
-  Log('NAVI-X: Get Processor for: ' + url)
+  url = '%s?url=%s&phase=0' % (processor, String.Quote(url, usePlus=True))
+  Log('NAVI-X: Get Processor for: %s' % url)
+
   data = app.storage.get(url)
   if data:
       datalist = data
