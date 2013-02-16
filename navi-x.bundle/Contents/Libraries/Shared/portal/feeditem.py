@@ -16,6 +16,7 @@ class FeedItem:
   description = ''
   icon = None
   thumb = None
+  background = None
   name = ''
   type = None
   date = ''
@@ -46,7 +47,8 @@ class FeedItem:
 
       name = re.search(self.regn, content, re.M)
       if name is not None:
-        self.name = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', name.group(1))
+        name = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', name.group(1))
+        self.name = re.sub('\s\s+', ' ', name)
 
       path = re.search(self.regu, content, re.M)
       if path is not None:
@@ -58,7 +60,8 @@ class FeedItem:
 
       description = re.search(self.regd, content, re.M)
       if description is not None:
-        self.description = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', description.group(1))
+        description = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', description.group(1))
+        self.description = re.sub('\s\s+', ' ', description)
 
       icon = re.search(self.regi, content, re.M)
       if icon is not None:
