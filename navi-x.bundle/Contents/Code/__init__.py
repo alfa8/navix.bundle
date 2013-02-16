@@ -11,18 +11,14 @@ from processor.nipl import *
 
 ####################################################################################################
 
-MAIN_URL       = "http://www.navixtreme.com/playlists/med_port.plx"
-TITLE          = L('Title')
-ART            = 'art-default.jpg'
-ICON           = 'icon-default.png'
-DEBUG          = True
+MAIN_URL = "http://www.navixtreme.com/playlists/med_port.plx"
+TITLE    = L('Title')
+ART      = 'art-default.jpg'
+ICON     = 'icon-default.png'
+DEBUG    = True
 
 ####################################################################################################
-
 def Start():
-
-  Plugin.AddViewGroup("InfoList", viewMode = "InfoList", mediaType = "items")
-  Plugin.AddViewGroup("List", viewMode = "List", mediaType = "items")
 
   ObjectContainer.title1 = TITLE
   ObjectContainer.art = R(ART)
@@ -32,10 +28,11 @@ def Start():
 
   HTTP.CacheTime = CACHE_1HOUR
 
+####################################################################################################
 @handler("/video/navi-x-plex", TITLE, art = ART, thumb = ICON)
 def MainMenu():
 
-  oc = ObjectContainer(view_group = "InfoList")
+  oc = ObjectContainer()
 
   content = GetContents(MAIN_URL)
   feed = Feed(content)
@@ -57,10 +54,11 @@ def MainMenu():
 
   return oc
 
+####################################################################################################
 @route('/video/navi-x-plex/submenu')
 def SubMenu(title, url):
 
-  oc = ObjectContainer(title2 = title, view_group = "List")
+  oc = ObjectContainer(title2 = title)
 
   content = GetContents(url)
   feed = Feed(content)
@@ -90,7 +88,7 @@ def SubMenu(title, url):
 
   return oc
 
-
+####################################################################################################
 def CreateMovieObject(url, processor, title, summary, include_container=False):
 
   movie_obj = MovieObject(
@@ -120,7 +118,7 @@ def CreateMovieObject(url, processor, title, summary, include_container=False):
   else:
     return movie_obj
 
-
+####################################################################################################
 def PlayVideo(url, processor):
 
   #i think callback can only pass on primitives, therefore we reconstruct the object here
@@ -157,7 +155,7 @@ def PlayVideo(url, processor):
     Log(result.playurl)
     return Redirect(result.playurl)
 
-
+####################################################################################################
 def GetContents(url):
   Log("requesting url: " + url.strip())
   try:
