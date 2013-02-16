@@ -10,106 +10,120 @@ from processor.nipl import *
 
 ####################################################################################################
 
-VIDEO_PREFIX   = "/video/navi-x-plex"
-MAIN_URL       = "http://www.navixtreme.com/playlists/med_port.plx"
-TITLE          = L('Title')
-ART            = 'art-default.jpg'
-ICON           = 'icon-default.png'
-DEBUG          = True
+MAIN_URL = 'http://www.navixtreme.com/playlists/med_port.plx'
+TITLE    = L('Title')
+ART      = 'art-default.jpg'
+ICON     = 'icon-default.png'
+DEBUG    = True
 
 ####################################################################################################
-
 def Start():
-
-  Plugin.AddViewGroup("InfoList", viewMode = "InfoList", mediaType = "items")
-  Plugin.AddViewGroup("List", viewMode = "List", mediaType = "items")
 
   ObjectContainer.title1 = TITLE
   ObjectContainer.art = R(ART)
   DirectoryObject.thumb = R(ICON)
-  DirectoryObject.art = R(ART)
   NextPageObject.thumb = R(ICON)
-  NextPageObject.art = R(ART)
   VideoClipObject.thumb = R(ICON)
-  VideoClipObject.art = R(ART)
 
-  #Causes issues with retrieval...must be xml blah blah... suckie suckie...
   HTTP.CacheTime = CACHE_1HOUR
 
-@handler(VIDEO_PREFIX, TITLE, art = ART, thumb = ICON)
+####################################################################################################
+@handler('/video/navix', TITLE, art=ART, thumb=ICON)
 def MainMenu():
 
-  oc = ObjectContainer(view_group = "InfoList")
+  return Menu(title=None, url=MAIN_URL)
 
-  content = GetContents(MAIN_URL)
-  feed = Feed(content)
+####################################################################################################
+@route('/video/navix/menu')
+def Menu(title, url):
+
+  oc = ObjectContainer(title2=title)
+  feed = GetFeed(url)
 
   for item in feed.items:
-
-    if item.thumb != None:
+    if item.thumb != None and item.thumb.startswith('http://'):
       thumb = item.thumb
     else:
       thumb = R(ICON)
-    if item.icon != None:
-      art = item.icon
-    elif feed.background != None:
+
+    if item.background != None and item.background.startswith('http://'):
+      art = item.background
+    elif feed.background != None and feed.background.startswith('http://'):
       art = feed.background
     else:
       art = R(ART)
 
-    title = clean(item.name)
-
-    oc.add(DirectoryObject(key = Callback(Playlist, title = title, url = item.path), title = title, tagline = '', summary = item.description, thumb = thumb, art = art))
-
-  return oc
-
-@route('/video/navi-x-plex/playlist/{title}')
-def Playlist(title, url):
-
-  oc = ObjectContainer(title2 = title, view_group = "List")
-
-  content = GetContents(url)
-  feed = Feed(content)
-
-  for item in feed.items:
-
-    if item.thumb != None:
-      thumb = item.thumb
-    else:
-      thumb = R(ICON)
-    if item.icon != None:
-      art = item.icon
-    elif feed.background != None:
-      art = feed.background
-    else:
-      art = R(ART)
-
-    title = clean(item.name)
-
-    if item.type == "video":
-      oc.add(MovieObject(key = Callback(Process, url = item.path, processor = item.processor, title = title, summary = item.description), rating_key = title, title = title, summary = item.description, thumb = thumb, art = art))
+    if item.type == 'video':
+      oc.add(CreateMovieObject(
+        url = item.path,
+        processor = item.processor,
+        title = item.name,
+        summary = item.description,
+        thumb = thumb,
+        art = art
+      ))
     elif item.type == 'playlist':
-      oc.add(DirectoryObject(key = Callback(Playlist, title = title, url = item.path), title = title, tagline = '', summary = item.description, thumb = thumb, art = art))
+      oc.add(DirectoryObject(
+        key = Callback(Menu, title=item.name, url=item.path),
+        title = item.name,
+        summary = item.description,
+        thumb = thumb,
+        art = art
+      ))
     else:
       continue
 
   return oc
 
-@route('/video/navi-x-plex/playlist/process/{title}')
-def Process(url, processor, title, summary):
+####################################################################################################
+def CreateMovieObject(url, processor, title, summary, thumb, art, include_container=False):
+
+  movie_obj = MovieObject(
+    key = Callback(CreateMovieObject, url=url, processor=processor, title=title, summary=summary, thumb=thumb, art=art, include_container=True),
+    rating_key = url,
+    title = title,
+    summary = summary,
+    thumb = thumb,
+    art = art,
+    items = [
+      MediaObject(
+        parts = [
+          PartObject(
+            key = Callback(PlayVideo, url=url, processor=processor)
+          )
+        ],
+        container = Container.MP4,
+        video_codec = VideoCodec.H264,
+        video_resolution = 'sd',
+        audio_codec = AudioCodec.AAC,
+        audio_channels = 2,
+        optimized_for_streaming = True
+      )
+    ]
+  )
+
+  if include_container:
+    return ObjectContainer(objects=[movie_obj])
+  else:
+    return movie_obj
+
+####################################################################################################
+def PlayVideo(url, processor):
+
   #i think callback can only pass on primitives, therefore we reconstruct the object here
   item = FeedItem('')
   item.path = url
   item.processor = processor
 
-  Log('start %s' % item.path)
-  Log('process with %s' % item.processor)
+  Log('start %s' % url)
+  Log('process with %s' % processor)
 
   app = FakeApp()
 
   #phase 1 retreive processor data
-  url = "".join([item.processor, '?url=', urllib.quote_plus(item.path), '&phase=0'])
-  Log('NAVI-X: Get Processor for: ' + item.path)
+  url = '%s?url=%s&phase=0' % (processor, String.Quote(url, usePlus=True))
+  Log('NAVI-X: Get Processor for: %s' % url)
+
   data = app.storage.get(url)
   if data:
     datalist = data
@@ -127,69 +141,23 @@ def Process(url, processor, title, summary):
     result = nipl.process()
 
   if result is not None:
-    oc = ObjectContainer(content = ContainerContent.Movies, user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.4) Gecko/2008102920 Firefox/3.0.4')
+    return Redirect(result.playurl)
+  else:
+    raise Ex.MediaNotAvailable
 
-    oc.add(
-      MovieObject(
-        key = Callback(Playable, url = item.playurl, title = title),
-        rating_key = title,
-        items = [
-          MediaObject(
-            parts =
-              [
-                PartObject(key = item.playurl)
-              ],
-            container = Container.MP4,
-            video_codec = VideoCodec.H264,
-            audio_codec = AudioCodec.AAC,
-            audio_channels = 2)
-        ]
-      )
-    )
+####################################################################################################
+def GetFeed(url):
 
-    Log.Debug('from process: returning oc for %s, url %s' % (title, item.playurl))
-    return oc
-
-@route('/video/navi-x-plex/playable/{title}')
-def Playable(url, title):
-  oc = ObjectContainer(content = ContainerContent.Movies, user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.4) Gecko/2008102920 Firefox/3.0.4')
-
-  oc.add(
-    MovieObject(
-      key = Callback(Playable, url = url, title = title),
-      rating_key = title,
-      items = [
-        MediaObject(
-          parts =
-            [
-              PartObject(key = url)
-            ],
-          container = Container.MP4,
-          video_codec = VideoCodec.H264,
-          audio_codec = AudioCodec.AAC,
-          audio_channels = 2)
-      ]
-    )
-  )
-
-  Log.Debug('from playable: returning oc for %s, url %s' % (title, url))
-  return oc
-
-def GetContents(url):
-  Log("requesting url: " + url.strip())
-  playlist = ""
+  Log("requesting url: %s" % url.strip())
   try:
-    playlist = HTTP.Request(url.strip(), timeout = 100000)
+    playlist = HTTP.Request(url.strip(), timeout=60).content
   except:
+    playlist = ""
     Log("error fetching playlist")
-  #Log(playlist)
-  return str(playlist)
 
-def clean(text):
-  s = String.StripDiacritics(text)
+  return Feed(playlist)
 
-  return s
-
+####################################################################################################
 class FakeApp:
 
   debug = True

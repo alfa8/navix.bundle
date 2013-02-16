@@ -1,7 +1,3 @@
 {
-    'Title': 'Navi-X',
-    'MusicTitle': 'Navi-X Music',
-    'VideoTitle': 'Navi-X Video',
-    'PhotosTitle': 'Navi-X Photos',
-    'ApplicationsTitle': 'Navi-X Applications',
+	"Title": "Navi-X"
 }
