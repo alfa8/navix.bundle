@@ -28,6 +28,7 @@ class FeedItem:
   v2 = ''
   live = ''
   player = ''
+  processor = ''
 
   def __init__(self, content):
 

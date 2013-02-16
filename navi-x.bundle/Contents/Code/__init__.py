@@ -11,7 +11,6 @@ from processor.nipl import *
 
 ####################################################################################################
 
-VIDEO_PREFIX   = "/video/navi-x-plex"
 MAIN_URL       = "http://www.navixtreme.com/playlists/med_port.plx"
 TITLE          = L('Title')
 ART            = 'art-default.jpg'
@@ -31,10 +30,9 @@ def Start():
   NextPageObject.thumb = R(ICON)
   VideoClipObject.thumb = R(ICON)
 
-  #Causes issues with retrieval...must be xml blah blah... suckie suckie...
-  #HTTP.CacheTime = CACHE_1HOUR
+  HTTP.CacheTime = CACHE_1HOUR
 
-@handler(VIDEO_PREFIX, TITLE, art = ART, thumb = ICON)
+@handler("/video/navi-x-plex", TITLE, art = ART, thumb = ICON)
 def MainMenu():
 
   oc = ObjectContainer(view_group = "InfoList")
@@ -81,7 +79,10 @@ def SubMenu(title, url):
       art = R(ART)
 
     if item.type == "video":
-      oc.add(MovieObject(key = Callback(Process, url = item.path, processor = item.processor, title = item.name, summary = item.description), rating_key = item.name, title = item.name, summary = item.description, thumb = thumb, art = art))
+      Log("========")
+      Log(item.name)
+      Log(item.processor)
+      oc.add(CreateMovieObject(url=item.path, processor=item.processor, title=item.name, summary=item.description))
     elif item.type == 'playlist':
       oc.add(DirectoryObject(key = Callback(SubMenu, title = item.name, url = item.path), title = item.name, tagline = '', summary = item.description, thumb = thumb, art = art))
     else:
@@ -89,21 +90,52 @@ def SubMenu(title, url):
 
   return oc
 
-@route('/video/navi-x-plex/submenu/process')
-def Process(url, processor, title, summary):
+
+def CreateMovieObject(url, processor, title, summary, include_container=False):
+
+  movie_obj = MovieObject(
+    key = Callback(CreateMovieObject, url=url, processor=processor, title=title, summary=summary, include_container=True),
+    rating_key = url,
+    title = title,
+    summary = summary,
+    items = [
+      MediaObject(
+        parts = [
+          PartObject(
+            key = Callback(PlayVideo, url=url, processor=processor)
+          )
+        ],
+        container = Container.MP4,
+        video_codec = VideoCodec.H264,
+        video_resolution = 'sd',
+        audio_codec = AudioCodec.AAC,
+        audio_channels = 2,
+        optimized_for_streaming = True
+      )
+    ]
+  )
+
+  if include_container:
+    return ObjectContainer(objects=[movie_obj])
+  else:
+    return movie_obj
+
+
+def PlayVideo(url, processor):
+
   #i think callback can only pass on primitives, therefore we reconstruct the object here
   item = FeedItem('')
   item.path = url
   item.processor = processor
 
-  Log('start %s' % item.path)
-  Log('process with %s' % item.processor)
+  Log('start %s' % url)
+  Log('process with %s' % processor)
 
   app = FakeApp()
 
   #phase 1 retreive processor data
-  url = "".join([item.processor, '?url=', urllib.quote_plus(item.path), '&phase=0'])
-  Log('NAVI-X: Get Processor for: ' + item.path)
+  url = "".join([processor, '?url=', String.Quote(url, usePlus=True), '&phase=0'])
+  Log('NAVI-X: Get Processor for: ' + url)
   data = app.storage.get(url)
   if data:
       datalist = data
@@ -121,43 +153,19 @@ def Process(url, processor, title, summary):
       result = nipl.process()
 
   if result is not None:
-    oc = ObjectContainer()
+    Log("==========================")
+    Log(result.playurl)
+    return Redirect(result.playurl)
 
-    oc.add(
-      MovieObject(
-        key = Callback(Playable, url = item.playurl, title = title),
-        rating_key = title,
-        items = [ MediaObject(parts = [ PartObject(key = url) ]) ]
-      )
-    )
-
-    Log.Debug('from process: returning oc for %s, url %s' % (title, item.playurl))
-    return oc
-
-@route('/video/navi-x-plex/playable')
-def Playable(url, title):
-  oc = ObjectContainer()
-
-  oc.add(
-    MovieObject(
-      key = Callback(Playable, url = url, title = title),
-      rating_key = title,
-      items = [ MediaObject(parts = [ PartObject(key = url) ]) ]
-    )
-  )
-
-  Log.Debug('from playable: returning oc for %s, url %s' % (title, url))
-  return oc
 
 def GetContents(url):
   Log("requesting url: " + url.strip())
-  playlist = ""
   try:
-    playlist = HTTP.Request(url.strip())
+    playlist = HTTP.Request(url.strip(), timeout=60).content
   except:
+    playlist = ""
     Log("error fetching playlist")
-  #Log(playlist)
-  return str(playlist)
+  return playlist
 
 class FakeApp:
 
