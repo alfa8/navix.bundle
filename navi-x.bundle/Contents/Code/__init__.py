@@ -77,6 +77,7 @@ def Menu(title, url):
   return oc
 
 ####################################################################################################
+@route('/video/navix/createmovieobject')
 def CreateMovieObject(url, processor, title, summary, thumb, art, include_container=False):
 
   movie_obj = MovieObject(
@@ -95,10 +96,8 @@ def CreateMovieObject(url, processor, title, summary, thumb, art, include_contai
         ],
         container = Container.MP4,
         video_codec = VideoCodec.H264,
-        video_resolution = 'sd',
         audio_codec = AudioCodec.AAC,
-        audio_channels = 2,
-        optimized_for_streaming = True
+        audio_channels = 2
       )
     ]
   )
@@ -109,6 +108,7 @@ def CreateMovieObject(url, processor, title, summary, thumb, art, include_contai
     return movie_obj
 
 ####################################################################################################
+@route('/video/navix/playvideo')
 def PlayVideo(url, processor):
 
   #i think callback can only pass on primitives, therefore we reconstruct the object here
