@@ -108,7 +108,18 @@ def CreateMovieObject(url, processor, title, summary, thumb, art, include_contai
     return movie_obj
 
 ####################################################################################################
+@indirect
 def PlayVideo(url, processor):
+
+  hash = Hash.MD5(url + processor)
+  Log('Checking for existence of item with hash %s' % hash)
+  if (Data.Exists(hash)):
+    Log('Found, skipping processor...')
+    url = Data.Load(hash)
+    Log('Redirecting to: %s' % url)
+    return Redirect(url)
+
+  Log('Not found...')
 
   #i think callback can only pass on primitives, therefore we reconstruct the object here
   item = FeedItem('')
@@ -124,16 +135,10 @@ def PlayVideo(url, processor):
   url = '%s?url=%s&phase=0' % (processor, String.Quote(url, usePlus=True))
   Log('NAVI-X: Get Processor for: %s' % url)
 
-  data = app.storage.get(url)
-  if data:
-    datalist = data
-  else:
-    #phase 1 retreive processor data
-    rawdata = urlopen(app, str(url), {'cookie':'version=1.'+str(app.navi_sub_version)+'; platform=plexapp', 'action':'read'})
-    htmRaw = rawdata['content']
-    htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
-    htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
-    datalist = htmRaw.replace('\t','').split('\n')
+  htmRaw = GetProcessor(url)
+  htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
+  htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
+  datalist = htmRaw.replace('\t','').split('\n')
 
   result = None
   if datalist[0] == 'v2':
@@ -141,6 +146,7 @@ def PlayVideo(url, processor):
     result = nipl.process()
 
   if result is not None:
+    Data.Save(hash, result.playurl)
     return Redirect(result.playurl)
   else:
     raise Ex.MediaNotAvailable
@@ -156,6 +162,18 @@ def GetFeed(url):
     Log("error fetching playlist")
 
   return Feed(playlist)
+
+####################################################################################################
+def GetProcessor(url):
+
+  Log("requesting url: %s" % url.strip())
+  try:
+    processor = HTTP.Request(url.strip(), timeout=60).content
+  except:
+    processor = ""
+    Log("error fetching processor")
+
+  return processor
 
 ####################################################################################################
 class FakeApp:
@@ -191,74 +209,3 @@ class FakeStorage:
     def set(self, id, data, **kwargs):
         print '============ setting item %s' % id
         self.stuff[id] = data
-
-def urlopen(app, url, args={}):
-  rdefaults={
-      'agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.4) Gecko/2008102920 Firefox/3.0.4',
-      'referer': '',
-      'cookie': '',
-      'action':'',
-      'method': 'get',
-      'postdata': '',
-      'headers': {},
-  }
-
-  for ke in rdefaults:
-      try:
-          args[ke]
-      except KeyError:
-          args[ke]=rdefaults[ke]
-
-  socket.setdefaulttimeout(float(app.url_open_timeout))
-
-  try:
-      hdr = {'User-Agent':args['agent'], 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Referer':args['referer'], 'Cookie':args['cookie']}
-  except:
-      print "Unexpected error:", sys.exc_info()[0]
-
-  for ke in args['headers']:
-      try:
-          hdr[ke] = args['headers'][ke]
-      except:
-          print "Unexpected error:", sys.exc_info()[0]
-
-  result ={
-      'headers':'',
-      'geturl':url,
-      'cookies':'',
-      'content':''
-      }
-
-  try:
-      cookieprocessor = urllib2.HTTPCookieProcessor()
-      opener = urllib2.build_opener(cookieprocessor)
-      urllib2.install_opener(opener)
-
-      if args['method'] == 'get':
-          req = urllib2.Request(url=url, headers = hdr)
-      else:
-          req = urllib2.Request(url, args['postdata'], hdr)
-
-      response = urllib2.urlopen(req)
-
-      cookies={}
-      for c in cookieprocessor.cookiejar:
-          cookies[c.name]=c.value
-
-      result['headers'] = response.info()
-      result['geturl'] = response.geturl()
-      result['cookies'] = cookies
-  except urllib2.URLError, e:
-      print e.reason
-      #app.gui.ShowDialogNotification('Error: %s' % e.reason)
-      response = StringIO.StringIO('')
-  except:
-      Log(app, traceback.format_exc() )
-      response = StringIO.StringIO('')
-
-  if args['action'] == 'read':
-      result['content'] = response.read()
-      response.close()
-  else:
-      result['content'] = response
-  return result
