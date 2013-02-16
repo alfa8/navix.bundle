@@ -22,7 +22,7 @@ class Feed:
 
     title = re.search(self.regt, content, re.M)
     if title is not None:
-      self.title = title.group(1)
+      self.title = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', title.group(1))
 
     version = re.search(self.regv, content, re.M)
     if version is not None:
