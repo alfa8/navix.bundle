@@ -134,13 +134,13 @@ def PlayVideo(url, processor):
 
   result = None
   if datalist[0] == 'v2':
-      nipl = NIPL(app, item, 0, datalist, Log)
-      result = nipl.process()
+    nipl = NIPL(app, item, 0, datalist, Log)
+    result = nipl.process()
 
   if result is not None:
-    Log("==========================")
-    Log(result.playurl)
     return Redirect(result.playurl)
+  else:
+    raise Ex.MediaNotAvailable
 
 ####################################################################################################
 def GetFeed(url):
