@@ -48,7 +48,7 @@ class FeedItem:
       name = re.search(self.regn, content, re.M)
       if name is not None:
         name = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', name.group(1))
-        self.name = re.sub('\s\s+', ' ', name)
+        self.name = unicode(re.sub('\s\s+', ' ', name)).strip()
 
       path = re.search(self.regu, content, re.M)
       if path is not None:
@@ -61,7 +61,7 @@ class FeedItem:
       description = re.search(self.regd, content, re.M)
       if description is not None:
         description = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', description.group(1))
-        self.description = re.sub('\s\s+', ' ', description)
+        self.description = unicode(re.sub('\s\s+', ' ', description)).strip()
 
       icon = re.search(self.regi, content, re.M)
       if icon is not None:

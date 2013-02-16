@@ -38,7 +38,7 @@ def MainMenu():
 @route('/video/navix/menu')
 def Menu(title, url):
 
-  oc = ObjectContainer(title2=title)
+  oc = ObjectContainer(title2=unicode(title))
   feed = GetFeed(url)
 
   for item in feed.items:
@@ -151,7 +151,7 @@ def GetFeed(url):
 
   Log("requesting url: %s" % url.strip())
   try:
-    playlist = HTTP.Request(url.strip(), timeout=60).content
+    playlist = HTTP.Request(url.strip(), encoding='utf-8', timeout=60).content
   except:
     playlist = ""
     Log("error fetching playlist")
