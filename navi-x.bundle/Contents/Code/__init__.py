@@ -33,16 +33,14 @@ def Start():
 def MainMenu():
 
   oc = ObjectContainer()
-
-  content = GetContents(MAIN_URL)
-  feed = Feed(content)
+  feed = GetFeed(MAIN_URL)
 
   for item in feed.items:
-
     if item.thumb != None:
       thumb = item.thumb
     else:
       thumb = R(ICON)
+
     if item.icon != None:
       art = item.icon
     elif feed.background != None:
@@ -50,7 +48,13 @@ def MainMenu():
     else:
       art = R(ART)
 
-    oc.add(DirectoryObject(key = Callback(SubMenu, title = item.name, url = item.path), title = item.name, tagline = '', summary = item.description, thumb = item.thumb, art = R(ART)))
+    oc.add(DirectoryObject(
+      key = Callback(SubMenu, title=item.name, url=item.path),
+      title = item.name,
+      summary = item.description,
+      thumb = thumb,
+      art = art
+    ))
 
   return oc
 
@@ -60,8 +64,7 @@ def SubMenu(title, url):
 
   oc = ObjectContainer(title2 = title)
 
-  content = GetContents(url)
-  feed = Feed(content)
+  feed = GetFeed(url)
 
   for item in feed.items:
 
@@ -156,15 +159,18 @@ def PlayVideo(url, processor):
     return Redirect(result.playurl)
 
 ####################################################################################################
-def GetContents(url):
-  Log("requesting url: " + url.strip())
+def GetFeed(url):
+
+  Log("requesting url: %s" % url.strip())
   try:
     playlist = HTTP.Request(url.strip(), timeout=60).content
   except:
     playlist = ""
     Log("error fetching playlist")
-  return playlist
 
+  return Feed(playlist)
+
+####################################################################################################
 class FakeApp:
 
   debug = True
