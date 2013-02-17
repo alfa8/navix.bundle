@@ -1,20 +1,20 @@
-navi-x-plex
-===========
+# Navi-X for Plex
+**Current status**: *development*
 
-Status: development
+## How to install
+Just copy the navi-x.bundle into your plugin folder.
+*You might have to disable capability checking.*
 
-Todo:
-- Create Info.plist file
-- Create plex menu structure
-- Create artwork/resources
-- Create bundle packaging
-- Explore NIPL parser
-- Write unit tests for NIPL parser
-- Get the NIPL parse working in Plex
-- Separate feed parsing and object construction
-- Move this list to issues/milestones
-- Enable the portal/playlist unit tests to also work on local files
+#### Todo
+- Refactor NIPL parser
+- Provide correct info to Plex (container, videocodec, audiocodec)
+- Handle live streams
+- Handle dead links
 
-Acknowledgements:
-- Original code copied from: https://github.com/jcoffman/NaviPlex
-- NIPL parser copied from: http://code.google.com/p/navi-x/source/browse/trunk/Navi-X%20BOXEE/beta/com.navix.main/source/libs/nipl.py
+
+#### Acknowledgements
+
+
+* Based on the work of [@jcoffman](Original code: https://github.com/jcoffman/NaviPlex)
+* Many thanks to the Navi-X team for the Boxee [NIPL parser](http://code.google.com/p/navi-x/source/browse/trunk/Navi-X%20BOXEE/beta/com.navix.main/source/libs/nipl.py)
+* +1000 to [@sander1](https://github.com/sander1) for helping me out with Plex plugin development and structuring things!
