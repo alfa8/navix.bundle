@@ -107,16 +107,19 @@ def CreateMovieObject(url, processor, title, summary, thumb, art, include_contai
     return movie_obj
 
 ####################################################################################################
-@route('/video/navix/playvideo')
+@indirect
+@route('video/navix/playvideo')
 def PlayVideo(url, processor):
 
   hash = Hash.MD5(url + processor)
   Log('Checking for existence of item with hash %s' % hash)
+
   if (Data.Exists(hash)):
+
     Log('Found, skipping processor...')
-    url = Data.Load(hash)
-    Log('Redirecting to: %s' % url)
-    return Redirect(url)
+    playurl = Data.Load(hash)
+    Log('Redirecting to: %s' % playurl)
+    return IndirectResponse(MovieObject, key=playurl)
 
   Log('Not found...')
 
@@ -146,7 +149,8 @@ def PlayVideo(url, processor):
 
   if result is not None:
     Data.Save(hash, result.playurl)
-    return Redirect(result.playurl)
+    Log('Redirecting to: %s' % result.playurl)
+    return IndirectResponse(MovieObject, key=result.playurl)
   else:
     raise Ex.MediaNotAvailable
 
