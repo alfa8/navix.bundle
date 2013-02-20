@@ -10,5 +10,9 @@
 	<string>2</string>
 	<key>PlexPluginCodePolicy</key>
 	<string>Elevated</string>
+  <key>PlexFrameworkFlags</key>
+  <array>
+    <string>UseRealRTMP</string>
+  </array>
 </dict>
 </plist>

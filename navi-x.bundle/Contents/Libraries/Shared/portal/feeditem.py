@@ -2,86 +2,84 @@ import re
 
 class FeedItem:
 
-  regt = "type=(.*)"
-  regn = "(?!#)name=(.*)"
-  regu = "(?!#)URL=(.*)"
-  regd = "(?!#)description=(.*)"
-  regi = "(?!#)icon=(.*)"
-  regth = "(?!#)thumb=(.*)"
-  regdt = "(?!#)date=(.*)"
-  regp = "(?!#)processor=(.*)"
-  regplayer = "(?!#)player=(.*)"
-  regrating = "(?!#)rating=(.*)"
+  regex = {
+    'type' : 'type=(.*)',
+    'name' : '(?!#)name=(.*)',
+    'url' : '(?!#)URL=(.*)',
+    'description' : '(?!#)description=(.*)',
+    'icon' : '(?!#)icon=(.*)',
+    'thumb' : '(?!#)thumb=(.*)',
+    'background' : '(?!#)background=(.*)',
+    'date' : '(?!#)date=(.*)',
+    'processor' : '(?!#)processor=(.*)',
+    'rating' : '(?!#)rating=(.*)',
+    'stream' : '(?!#)URL=(?P<stream>(rtmp|http|https)://[^\s]*)',
+    'swfplayer' : 'swfUrl=(?P<swf_url>[^\s]*)',
+    'playpath' : 'playpath=(?P<playpath>[^\s]*)',
+    'swfVfy' : '[Vfy|swfVfy]=(?P<swfVfy>[^\s]*)',
+    'pageurl' : 'pageUrl=(?P<pageurl>[^\s]*)',
+    'live' : 'live=(?P<live>[^\s]*)',
+    'timeout' : 'timeout=(?P<timeout>[^\s\w]*)'
+   }
 
-  description = ''
-  icon = None
-  thumb = None
-  background = None
-  name = ''
-  type = None
-  date = ''
-  path = ''
-  swfplayer = ''
-  playpath = ''
-  error = ''
-  pageurl = ''
-  v1 = ''
-  v2 = ''
-  live = ''
-  player = ''
-  processor = ''
-
+  ####################################################################################################
   def __init__(self, content):
 
-    #todo: add parsing code for swf urls
-    #example: rtmp://204.45.66.186/ctv playpath=tom swfUrl=http://www.canaistv.net/swf/player.swf pageUrl=http://www.canaistv.net/tvamigos/tom&jerry.html live=1
-    #needs to be split in properties
-    self.live = ''
+    # begin warning: needed by niple parser, refactor out
+    self.agent = ''
+    self.app = None
+    self.referer = ''
+    self.player = 'default'
+    # end warning: needed by niple parser, refactor out
+
     self.content = content
+    self.error = None
+    self.playurl = '' # the result from scraping
 
-    if self.content != '':
+    self.type = ''
+    self.name = ''
+    self.url = '' # the url to scrape
+    self.processor = '' # the processor to scrape with
+    self.description = ''
+    self.icon = ''
+    self.thumb = ''
+    self.background = ''
+    self.date = ''
+    self.rating = 0
+    self.stream = ''
+    self.swfplayer = ''
+    self.playpath = ''
+    self.swfVfy = False
+    self.pageurl = ''
+    self.live = False
+    self.timeout = 0
 
-      type = re.search(self.regt, content, re.M)
-      if type is not None:
-        self.type = type.group(1)
+    for var in vars(self):
+      if var in self.regex:
+        result = re.search(self.regex[var], content, re.M)
+        if result is not None:
+          self.setVar(var, result.group(1))
 
-      name = re.search(self.regn, content, re.M)
-      if name is not None:
-        name = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', name.group(1))
-        self.name = unicode(re.sub('\s\s+', ' ', name)).strip()
+    if self.name != '':
+      name = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', self.name)
+      self.name = unicode(re.sub('\s\s+', ' ', name)).strip()
 
-      path = re.search(self.regu, content, re.M)
-      if path is not None:
-        self.path = path.group(1)
+    if self.description != '':
+      description = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', self.description)
+      self.description = unicode(re.sub('\s\s+', ' ', description)).strip()
 
-      processor = re.search(self.regp, content, re.M)
-      if processor is not None:
-        self.processor = processor.group(1)
+    if self.swfVfy != '':
+      if self.swfVfy == '1' or self.swfVfy == 'true' or self.swfVfy == True:
+        self.swfVfy = True
+      else:
+        self.swfVfy = False
 
-      description = re.search(self.regd, content, re.M)
-      if description is not None:
-        description = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', description.group(1))
-        self.description = unicode(re.sub('\s\s+', ' ', description)).strip()
+    if self.live != '':
+      if self.live == '1' or self.live == 'true' or self.live == True:
+        self.live = True
+      else:
+        self.live = False
 
-      icon = re.search(self.regi, content, re.M)
-      if icon is not None:
-        self.icon = icon.group(1)
-
-      thumb = re.search(self.regth, content, re.M)
-      if thumb is not None:
-        self.thumb = thumb.group(1)
-
-      date = re.search(self.regdt, content, re.M)
-      if date is not None:
-        self.date = date.group(1)
-
-      player = re.search(self.regplayer, content, re.M)
-      if player is not None:
-        self.player = player.group(1)
-
-      rating = re.search(self.regrating, content, re.M)
-      if rating is not None:
-        self.rating = rating.group(1)
-
+  ####################################################################################################
   def setVar(self, var, value):
     vars(self)[var] = value

@@ -54,17 +54,31 @@ def Menu(title, url):
       art = R(ART)
 
     if item.type == 'video':
-      oc.add(CreateMovieObject(
-        url = item.path,
-        processor = item.processor,
-        title = item.name,
-        summary = item.description,
-        thumb = thumb,
-        art = art
-      ))
+      if item.processor == '':
+        oc.add(CreateVideoClipObject(
+          url = item.stream,
+          clip = item.playpath,
+          swf_url = item.swfplayer,
+          pageurl = item.pageurl,
+          timeout = item.timeout,
+          live = item.live,
+          title = item.name,
+          summary = item.description,
+          thumb = thumb,
+          art = art
+          ))
+      else:
+        oc.add(CreateMovieObject(
+          url = item.url,
+          processor = item.processor,
+          title = item.name,
+          summary = item.description,
+          thumb = thumb,
+          art = art
+        ))
     elif item.type == 'playlist':
       oc.add(DirectoryObject(
-        key = Callback(Menu, title=item.name, url=item.path),
+        key = Callback(Menu, title=item.name, url=item.url),
         title = item.name,
         summary = item.description,
         thumb = thumb,
@@ -74,6 +88,59 @@ def Menu(title, url):
       continue
 
   return oc
+
+####################################################################################################
+@route('/video/navix/createvideoclipobject')
+def CreateVideoClipObject(url, clip, swf_url, pageurl, timeout, live, title, summary, thumb, art, include_container=False):
+
+  clip_obj = VideoClipObject(
+    key = Callback(CreateVideoClipObject, url=url, clip=clip, swf_url=swf_url, pageurl=pageurl, timeout=timeout, live=live, title=title, summary=summary, thumb=thumb, art=art, include_container=True),
+    rating_key = title,
+    title = title,
+    summary = summary,
+    thumb = thumb,
+    art = art,
+    items = [
+      MediaObject(
+        parts = [
+          PartObject(
+            key = Callback(PlayStream, url=url, clip=clip, swf_url=swf_url, pageurl=pageurl, timeout=timeout, live=live)
+          )
+        ],
+        optimized_for_streaming = True
+      )
+    ]
+  )
+
+  if include_container:
+    return ObjectContainer(objects=[clip_obj])
+  else:
+    return clip_obj
+
+####################################################################################################
+@indirect
+@route('video/navix/playstream')
+def PlayStream(url, clip, swf_url, pageurl, timeout, live):
+
+  Log('#' * 100)
+  Log('url: %s' % url)
+  Log('clip: %s' % clip)
+  Log('swf_url: %s' % swf_url)
+  Log('pageurl: %s' % pageurl)
+  Log('timeout: %s' % timeout)
+  Log('live: %s' % live)
+  Log('#' * 100)
+
+  if (url.startswith('http') or url.startswith('https')):
+    return IndirectResponse(VideoClipObject, key=HTTPLiveStreamURL(url=url))
+
+  if clip is not None:
+    if clip[-4:] == '.mp4':
+      clip = 'MP4:' + clip[:-4]
+    else:
+      clip = clip.replace('.flv', '')
+
+  return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url=url, clip=clip, swf_url=swf_url, live=live, pageurl=pageurl))
 
 ####################################################################################################
 @route('/video/navix/createmovieobject')
@@ -115,17 +182,15 @@ def PlayVideo(url, processor):
   Log('Checking for existence of item with hash %s' % hash)
 
   if (Data.Exists(hash)):
-
     Log('Found, skipping processor...')
     playurl = Data.Load(hash)
+    # todo: check content age...
     Log('Redirecting to: %s' % playurl)
     return IndirectResponse(MovieObject, key=playurl)
 
   Log('Not found...')
-
-  #i think callback can only pass on primitives, therefore we reconstruct the object here
   item = FeedItem('')
-  item.path = url
+  item.url = url
   item.processor = processor
 
   Log('start %s' % url)
@@ -171,7 +236,7 @@ def GetProcessor(url):
 
   Log("requesting url: %s" % url.strip())
   try:
-    processor = HTTP.Request(url.strip(), timeout=60).content
+    processor = HTTP.Request(url.strip(), encoding='utf-8', timeout=60).content
   except:
     processor = ""
     Log("error fetching processor")
