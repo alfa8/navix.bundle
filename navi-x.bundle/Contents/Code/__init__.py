@@ -10,11 +10,14 @@ from processor.nipl import *
 
 ####################################################################################################
 
-MAIN_URL = 'http://www.navixtreme.com/playlists/med_port.plx'
-TITLE    = L('Title')
-ART      = 'art-default.jpg'
-ICON     = 'icon-default.png'
-DEBUG    = True
+MAIN_URL        = 'http://www.navixtreme.com/playlists/med_port.plx'
+TITLE           = L('Title')
+ART             = 'art-default.jpg'
+ICON            = 'icon-default.png'
+DEBUG           = True
+CACHE_NAME      = 'NAVIX_CACHE'
+CACHE_MAX_ITEMS = 100
+CACHE_MAX_BYTES = 1 * 1024 * 1024
 
 ####################################################################################################
 def Start():
@@ -26,6 +29,8 @@ def Start():
   VideoClipObject.thumb = R(ICON)
 
   HTTP.CacheTime = CACHE_1HOUR
+
+  PruneCache(CACHE_MAX_BYTES, CACHE_MAX_ITEMS)
 
 ####################################################################################################
 @handler('/video/navix', TITLE, art=ART, thumb=ICON)
@@ -122,14 +127,15 @@ def CreateVideoClipObject(url, clip, swf_url, pageurl, timeout, live, title, sum
 @route('video/navix/playstream')
 def PlayStream(url, clip, swf_url, pageurl, timeout, live):
 
-  Log('#' * 100)
-  Log('url: %s' % url)
-  Log('clip: %s' % clip)
-  Log('swf_url: %s' % swf_url)
-  Log('pageurl: %s' % pageurl)
-  Log('timeout: %s' % timeout)
-  Log('live: %s' % live)
-  Log('#' * 100)
+  LogDebug('Starting stream...')
+  LogDebug('*' * 100)
+  LogDebug('url: %s' % url)
+  LogDebug('clip: %s' % clip)
+  LogDebug('swf_url: %s' % swf_url)
+  LogDebug('pageurl: %s' % pageurl)
+  LogDebug('timeout: %s' % timeout)
+  LogDebug('live: %s' % live)
+  LogDebug('*' * 100)
 
   if (url.startswith('http') or url.startswith('https')):
     return IndirectResponse(VideoClipObject, key=HTTPLiveStreamURL(url=url))
@@ -178,30 +184,24 @@ def CreateMovieObject(url, processor, title, summary, thumb, art, include_contai
 @route('video/navix/playvideo')
 def PlayVideo(url, processor):
 
-  hash = Hash.MD5(url + processor)
-  Log('Checking for existence of item with hash %s' % hash)
+  cache_key = Hash.MD5(url)
+  playurl = GetCacheItem(cache_key)
 
-  if (Data.Exists(hash)):
-    Log('Found, skipping processor...')
-    playurl = Data.Load(hash)
-    # todo: check content age...
-    Log('Redirecting to: %s' % playurl)
+  if playurl is not None:
+    LogDebug('the cache returned a playurl, skipping processor...')
     return IndirectResponse(MovieObject, key=playurl)
 
-  Log('Not found...')
+  LogDebug('url to process %s' % url)
+  LogDebug('will be processed with %s' % processor)
+
   item = FeedItem('')
   item.url = url
   item.processor = processor
-
-  Log('start %s' % url)
-  Log('process with %s' % processor)
 
   app = FakeApp()
 
   #phase 1 retreive processor data
   url = '%s?url=%s&phase=0' % (processor, String.Quote(url, usePlus=True))
-  Log('NAVI-X: Get Processor for: %s' % url)
-
   htmRaw = GetProcessor(url)
   htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
   htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
@@ -209,12 +209,12 @@ def PlayVideo(url, processor):
 
   result = None
   if datalist[0] == 'v2':
-    nipl = NIPL(app, item, 0, datalist, Log)
+    nipl = NIPL(app, item, 0, datalist, LogDebug)
     result = nipl.process()
 
   if result is not None:
-    Data.Save(hash, result.playurl)
-    Log('Redirecting to: %s' % result.playurl)
+    SetCacheItem(cache_key, result.playurl)
+    LogDebug('redirecting to: %s' % result.playurl)
     return IndirectResponse(MovieObject, key=result.playurl)
   else:
     raise Ex.MediaNotAvailable
@@ -222,26 +222,67 @@ def PlayVideo(url, processor):
 ####################################################################################################
 def GetFeed(url):
 
-  Log("requesting url: %s" % url.strip())
+  LogDebug("requesting url: %s" % url.strip())
   try:
     playlist = HTTP.Request(url.strip(), encoding='utf-8', timeout=60).content
   except:
     playlist = ""
-    Log("error fetching playlist")
+    LogDebug("error fetching playlist")
 
   return Feed(playlist)
 
 ####################################################################################################
 def GetProcessor(url):
 
-  Log("requesting url: %s" % url.strip())
+  LogDebug("requesting url: %s" % url.strip())
   try:
     processor = HTTP.Request(url.strip(), encoding='utf-8', timeout=60).content
   except:
     processor = ""
-    Log("error fetching processor")
+    LogDebug("error fetching processor")
 
   return processor
+
+####################################################################################################
+def SetCacheItem(key, data, duration_seconds = 7200):
+
+  LogDebug('caching item with key %s ' % key)
+
+  cache = Cache[CACHE_NAME]
+  item = cache[key]
+  item['data'] = data
+
+  LogDebug('cache count: %s' % cache.item_count)
+
+####################################################################################################
+def GetCacheItem(key):
+
+  LogDebug('getting cache item with key: %s' % key)
+
+  cache = Cache[CACHE_NAME]
+  item = cache[key]
+
+  LogDebug('item expired: %s' % item.expired)
+  LogDebug('item modified_at %s' % item.modified_at)
+
+  #todo; get the expired flag working...this is buggy...
+  if item.expired:
+    LogDebug('not found...')
+    return item['data']
+  else:
+    LogDebug('cache hit...')
+    return item['data']
+
+####################################################################################################
+def PruneCache(max_bytes, max_items):
+
+  LogDebug('pruning cache')
+  cache = Cache[CACHE_NAME]
+  cache.trim(max_bytes, max_items)
+
+####################################################################################################
+def LogDebug(message):
+  Log.Debug('*[navix]* %s' % message)
 
 ####################################################################################################
 class FakeApp:
@@ -251,7 +292,7 @@ class FakeApp:
   navi_version = 1
   navi_sub_version = 1
   storage = None
-  url_open_timeout = 700000
+  url_open_timeout = 120
 
   def __init__(self):
     self.storage = FakeStorage()
@@ -266,14 +307,13 @@ class FakeStorage:
     def get(self, id, **kwargs):
       item = None
       try:
-        print '============ getting item %s' % id
+        LogDebug('============ getting item %s' % id)
         item = self.stuff[id]
       except Exception, e:
         return item
 
       return item
 
-
     def set(self, id, data, **kwargs):
-        print '============ setting item %s' % id
+        LogDebug('============ setting item %s' % id)
         self.stuff[id] = data

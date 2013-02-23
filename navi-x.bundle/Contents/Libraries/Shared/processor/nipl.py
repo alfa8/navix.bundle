@@ -8,10 +8,10 @@ from utils.utils import urlopen
 class NIPL:
 
   ####################################################################################################
-  def __init__(self, app, item, phase, datalist, Log):
+  def __init__(self, app, item, phase, datalist, LogDebug):
 
-    self.Log = Log
-    self.Log.Debug('NAVI-X NIPL: Init.... phase ' + str(phase))
+    self.Log = LogDebug
+    self.Log('initializing niple phase: ' + str(phase))
 
     # depth of logical statements
     self.depth = 0
@@ -137,9 +137,9 @@ class NIPL:
       if self._pass: continue
       if self.verbose > 1 or self.__app__.debug:
         if not self.skip:
-          self.Log.Debug('NAVI-X NIPL: EXEC Line - ' + str(line))
+          self.Log('nipl EXEC: ' + str(line))
         else:
-          self.Log.Debug('NAVI-X NIPL: SKIP Line - ' + str(line))
+          self.Log('nipl SKIP: ' + str(line))
 
       try:
         linelist = line.split(' ')
@@ -160,14 +160,14 @@ class NIPL:
           continue
 
         self.setValue(line=line)
-      except: self.Log.Exception('unable to twist nipl')
+      except: self.Log('unable to twist nipl')
 
     self.saveCache()
     self.saveNookie()
 
     if self._error:
-        self.__item__.url = ''
-        self.__item__.error = self._error
+      self.__item__.url = ''
+      self.__item__.error = self._error
 
     return self.__item__
 
@@ -229,7 +229,7 @@ class NIPL:
   def debug(self, line):
     if self.verbose > 0:
       var1 = self.getValue(line)
-      try: self.Log.Debug(" ".join(['NAVI-X NIPL: ', str(line), '=', str(var1)]))
+      try: self.Log(" ".join(['nipl ', str(line), '=', str(var1)]))
       except: pass
 
   ####################################################################################################
@@ -241,14 +241,14 @@ class NIPL:
   ####################################################################################################
   def _print(self, line):
     var1 = self.getValue(line)
-    self.Log.Debug(" ".join(['NAVI-X NIPL: ', str(line), '=', str(var1)]))
+    self.Log(" ".join(['nipl ', str(line), '=', str(var1)]))
 
   ####################################################################################################
   def error(self, line):
     self._pass = True
     var1 = self.getValue(line)
     self._error = str(var1)
-    self.Log.Error('NAVI-X NIPL: Error! %s' %str(var1))
+    self.Log('nipl error! %s' %str(var1))
 
   ####################################################################################################
   def match(self, line):
@@ -316,7 +316,7 @@ class NIPL:
     rawdata['content'].close()
 
     self._pass = True
-    nipl = NIPL(self.__app__, self.__item__, self.phase+1, datalist)
+    nipl = NIPL(self.__app__, self.__item__, self.phase+1, datalist, LogDebug)
     return nipl.process()
 
   ####################################################################################################
@@ -330,7 +330,7 @@ class NIPL:
   ####################################################################################################
   def _printv(self, i, string):
     if self.verbose >= i or self.__app__.debug:
-      self.Log.Debug('NAVI-X NIPL: %s' % string)
+      self.Log('nipl %s' % string)
 
   ####################################################################################################
   def scrape(self):
