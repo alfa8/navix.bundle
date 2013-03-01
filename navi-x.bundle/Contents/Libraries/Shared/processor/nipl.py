@@ -19,7 +19,7 @@ class NIPL:
     self.__app__ = app
     self.__item__ = item
 
-    self.s_url = item.url
+    self.s_url = item['url']
     self.s_method = 'get'
     self.s_action = 'read'
     self.s_agent = app.url_useragent
@@ -28,15 +28,15 @@ class NIPL:
     self.s_postdata = ''
     self.s_headers = {}
 
-    self.url = item.url
-    self.swfplayer = item.swfplayer
-    self.playpath = item.playpath
+    self.url = item['url']
+    self.swfplayer = item['swfplayer']
+    self.playpath = item['playpath']
     self.agent = app.url_useragent
     self.app = ''
-    self.pageurl = item.pageurl
+    self.pageurl = item['pageurl']
     self.swfVfy = ''
     self.referer = ''
-    self.player = item.player
+    self.player = item['player']
     self.live = ''
 
     self.verbose = 0
@@ -91,7 +91,7 @@ class NIPL:
   ### Functions for data retreival from navi db
   ####################################################################################################
   def getNookie(self):
-    id = "".join(['nookie', self.__item__.processor, '?url=', quote_plus(self.__item__.url)])
+    id = "".join(['nookie', self.__item__['processor'], '?url=', quote_plus(self.__item__['url'])])
 
     if self.nookie_expires == '0':
       period = 16070400
@@ -112,13 +112,13 @@ class NIPL:
   ####################################################################################################
   def saveNookie(self):
     if len(self.nookies) > 0:
-      id = "".join(['nookie', self.__item__.processor, '?url=', quote_plus(self.__item__.url)])
+      id = "".join(['nookie', self.__item__['processor'], '?url=', quote_plus(self.__item__['url'])])
       self.__app__.storage.set(id, self.nookies, persistent = True)
 
   ####################################################################################################
   def saveCache(self):
     if self.cacheable > 1:
-      id = "".join([__item__.processor, '?url=', quote_plus(__item__.url)])
+      id = "".join([self.__item__['processor'], '?url=', quote_plus(self.__item__['url'])])
       self.__app__.storage.set(id, self.__cache__)
 
   ####################################################################################################
@@ -166,8 +166,8 @@ class NIPL:
     self.saveNookie()
 
     if self._error:
-      self.__item__.url = ''
-      self.__item__.error = self._error
+      self.__item__['url'] = ''
+      self.__item__['error'] = self._error
 
     return self.__item__
 
@@ -284,7 +284,7 @@ class NIPL:
     self._printv(0, 'PLAY Variables')
     for item in parse:
       self._printv(0, str(item) + ' - ' + str(vars(self)[item]))
-      self.__item__.setVar(item, vars(self)[item])
+      self.__item__[item] = vars(self)[item]
     self._pass = True
 
   ####################################################################################################
@@ -304,7 +304,7 @@ class NIPL:
   def report(self):
     vars = ["".join([key,'=',quote_plus(item)]) for (key, item) in self.__matchresults__.items()]
     vars.append("".join(['phase=', str(self.phase+1)]))
-    url = "".join([self.__item__.processor, '?', "&".join(vars) ])
+    url = "".join([self.__item__['processor'], '?', "&".join(vars) ])
 
     self._printv(0, 'Report with url= '+url)
     rawdata = urlopen(self.__app__, str(url), {'cookie':'version='+str(self.__app__.navi_version)+'.'+str(self.__app__.navi_sub_version)+'; platform='+self.__app__.os})

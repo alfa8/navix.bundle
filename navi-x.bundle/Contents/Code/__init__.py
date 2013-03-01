@@ -20,6 +20,35 @@ CACHE_MAX_ITEMS = 100
 CACHE_MAX_BYTES = 1 * 1024 * 1024
 
 ####################################################################################################
+
+feed_regex = {
+  'version' : '(?!#)version=(.*)',
+  'title' : '(?!#)title=(.*)',
+  'logo' : '(?!#)logo=(.*)',
+  'background' : '(?!#)background=(.*)'
+ }
+
+feeditem_regex = {
+  'type' : 'type=(.*)',
+  'name' : '(?!#)name=(.*)',
+  'url' : '(?!#)URL=(.*)',
+  'description' : '(?!#)description=(.*)',
+  'icon' : '(?!#)icon=(.*)',
+  'thumb' : '(?!#)thumb=(.*)',
+  'background' : '(?!#)background=(.*)',
+  'date' : '(?!#)date=(.*)',
+  'processor' : '(?!#)processor=(.*)',
+  'rating' : '(?!#)rating=(.*)',
+  'stream' : '(?!#)URL=(?P<stream>(rtmp|http|https)://[^\s]*)',
+  'swfplayer' : 'swfUrl=(?P<swf_url>[^\s]*)',
+  'playpath' : 'playpath=(?P<playpath>[^\s]*)',
+  'swfVfy' : '[Vfy|swfVfy]=(?P<swfVfy>[^\s]*)',
+  'pageurl' : 'pageUrl=(?P<pageurl>[^\s]*)',
+  'live' : 'live=(?P<live>[^\s]*)',
+  'timeout' : 'timeout=(?P<timeout>[^\s\w]*)'
+ }
+
+####################################################################################################
 def Start():
 
   ObjectContainer.title1 = TITLE
@@ -43,49 +72,47 @@ def MainMenu():
 def Menu(title, url):
 
   oc = ObjectContainer(title2=unicode(title))
-  feed = GetFeed(url)
+  feed = CreatePlaylist(url)
 
-  for item in feed.items:
-    if item.thumb != None and item.thumb.startswith('http://'):
-      thumb = item.thumb
+  for item in feed['items']:
+
+    if 'thumb' in item and item['thumb'].startswith('http://'):
+      thumb = item['thumb']
     else:
       thumb = R(ICON)
 
-    if item.background != None and item.background.startswith('http://'):
-      art = item.background
-    elif feed.background != None and feed.background.startswith('http://'):
-      art = feed.background
+    if 'background' in item and item['background'].startswith('http://'):
+      art = item['background']
+    elif 'background' in feed and feed['background'].startswith('http://'):
+      art = feed['background']
     else:
       art = R(ART)
 
-    if item.type == 'video':
-      if item.processor == '':
+    if item['type'] == 'video':
+      if item['processor'] == '':
         oc.add(CreateVideoClipObject(
-          url = item.stream,
-          clip = item.playpath,
-          swf_url = item.swfplayer,
-          pageurl = item.pageurl,
-          timeout = item.timeout,
-          live = item.live,
-          title = item.name,
-          summary = item.description,
+          url = item['stream'],
+          clip = item['playpath'],
+          swf_url = item['swfplayer'],
+          pageurl = item['pageurl'],
+          timeout = item['timeout'],
+          live = item['live'],
+          title = item['name'],
+          summary = item['description'],
           thumb = thumb,
           art = art
           ))
       else:
         oc.add(CreateMovieObject(
-          url = item.url,
-          processor = item.processor,
-          title = item.name,
-          summary = item.description,
+          item = item,
           thumb = thumb,
           art = art
         ))
-    elif item.type == 'playlist':
+    elif item['type'] == 'playlist':
       oc.add(DirectoryObject(
-        key = Callback(Menu, title=item.name, url=item.url),
-        title = item.name,
-        summary = item.description,
+        key = Callback(Menu, title=item['name'], url=item['url']),
+        title = item['name'],
+        summary = item['description'],
         thumb = thumb,
         art = art
       ))
@@ -93,6 +120,82 @@ def Menu(title, url):
       continue
 
   return oc
+
+####################################################################################################
+@route('/video/navix/createmovieobject', item=dict)
+def CreateMovieObject(item, thumb, art, include_container=False):
+
+  movie_obj = MovieObject(
+    key = Callback(CreateMovieObject, item=item, thumb=thumb, art=art, include_container=True),
+    rating_key = item['url'],
+    title = item['name'],
+    summary = item['description'],
+    thumb = thumb,
+    art = art,
+    items = [
+      MediaObject(
+        parts = [
+          PartObject(
+            key = Callback(PlayVideo, item=item)
+          )
+        ],
+        container = Container.MP4,
+        video_codec = VideoCodec.H264,
+        audio_codec = AudioCodec.AAC,
+        audio_channels = 2
+      )
+    ]
+  )
+
+  if include_container:
+    return ObjectContainer(objects=[movie_obj])
+  else:
+    return movie_obj
+
+####################################################################################################
+@indirect
+@route('video/navix/playvideo', item=dict)
+def PlayVideo(item):
+
+  result = Processor(item)
+
+  if result is not None:
+    LogDebug('redirecting to: %s' % result['playurl'])
+    return IndirectResponse(MovieObject, key=result['playurl'])
+  else:
+    raise Ex.MediaNotAvailable
+
+####################################################################################################
+def Processor(item):
+
+  cache_key = Hash.MD5(item['url'])
+  result = GetCacheItem(cache_key)
+
+  if result is not None:
+    LogDebug('the cache returned a result, skipping processor...')
+    return result
+
+  LogDebug('url to process %s' % item['url'])
+  LogDebug('will be processed with %s' % item['processor'])
+
+  app = FakeApp()
+
+  #phase 1 retreive processor data
+  url = '%s?url=%s&phase=0' % (item['processor'], String.Quote(item['url'], usePlus=True))
+  htmRaw = GetProcessor(url)
+  htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
+  htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
+  datalist = htmRaw.replace('\t','').split('\n')
+
+  result = None
+  if datalist[0] == 'v2':
+    nipl = NIPL(app, item, 0, datalist, LogDebug)
+    result = nipl.process()
+
+    if result is not None:
+      SetCacheItem(cache_key, result)
+
+  return result
 
 ####################################################################################################
 @route('/video/navix/createvideoclipobject')
@@ -149,77 +252,6 @@ def PlayStream(url, clip, swf_url, pageurl, timeout, live):
   return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url=url, clip=clip, swf_url=swf_url, live=live, pageurl=pageurl))
 
 ####################################################################################################
-@route('/video/navix/createmovieobject')
-def CreateMovieObject(url, processor, title, summary, thumb, art, include_container=False):
-
-  movie_obj = MovieObject(
-    key = Callback(CreateMovieObject, url=url, processor=processor, title=title, summary=summary, thumb=thumb, art=art, include_container=True),
-    rating_key = url,
-    title = title,
-    summary = summary,
-    thumb = thumb,
-    art = art,
-    items = [
-      MediaObject(
-        parts = [
-          PartObject(
-            key = Callback(PlayVideo, url=url, processor=processor)
-          )
-        ],
-        container = Container.MP4,
-        video_codec = VideoCodec.H264,
-        audio_codec = AudioCodec.AAC,
-        audio_channels = 2
-      )
-    ]
-  )
-
-  if include_container:
-    return ObjectContainer(objects=[movie_obj])
-  else:
-    return movie_obj
-
-####################################################################################################
-@indirect
-@route('video/navix/playvideo')
-def PlayVideo(url, processor):
-
-  cache_key = Hash.MD5(url)
-  playurl = GetCacheItem(cache_key)
-
-  if playurl is not None:
-    LogDebug('the cache returned a playurl, skipping processor...')
-    return IndirectResponse(MovieObject, key=playurl)
-
-  LogDebug('url to process %s' % url)
-  LogDebug('will be processed with %s' % processor)
-
-  item = FeedItem('')
-  item.url = url
-  item.processor = processor
-
-  app = FakeApp()
-
-  #phase 1 retreive processor data
-  url = '%s?url=%s&phase=0' % (processor, String.Quote(url, usePlus=True))
-  htmRaw = GetProcessor(url)
-  htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
-  htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
-  datalist = htmRaw.replace('\t','').split('\n')
-
-  result = None
-  if datalist[0] == 'v2':
-    nipl = NIPL(app, item, 0, datalist, LogDebug)
-    result = nipl.process()
-
-  if result is not None:
-    SetCacheItem(cache_key, result.playurl)
-    LogDebug('redirecting to: %s' % result.playurl)
-    return IndirectResponse(MovieObject, key=result.playurl)
-  else:
-    raise Ex.MediaNotAvailable
-
-####################################################################################################
 def GetFeed(url):
 
   LogDebug("requesting url: %s" % url.strip())
@@ -244,13 +276,14 @@ def GetProcessor(url):
   return processor
 
 ####################################################################################################
-def SetCacheItem(key, data, duration_seconds = 7200):
+def SetCacheItem(key, item, duration_seconds = 7200):
 
   LogDebug('caching item with key %s ' % key)
 
   cache = Cache[CACHE_NAME]
-  item = cache[key]
-  item['data'] = data
+  cache_item = cache[key]
+
+  cache_item.data = item
 
   LogDebug('cache count: %s' % cache.item_count)
 
@@ -260,29 +293,155 @@ def GetCacheItem(key):
   LogDebug('getting cache item with key: %s' % key)
 
   cache = Cache[CACHE_NAME]
-  item = cache[key]
+  cache_item = cache[key]
 
-  LogDebug('item expired: %s' % item.expired)
-  LogDebug('item modified_at %s' % item.modified_at)
+  LogDebug('cache_item expired: %s' % cache_item.expired)
+  LogDebug('cache_item modified_at %s' % cache_item.modified_at)
 
   #todo; get the expired flag working...this is buggy...
-  if item.expired:
+  if cache_item.expired:
     LogDebug('not found...')
-    return item['data']
+    return cache_item.data
   else:
     LogDebug('cache hit...')
-    return item['data']
+    return cache_item.data
 
 ####################################################################################################
 def PruneCache(max_bytes, max_items):
 
   LogDebug('pruning cache')
+
   cache = Cache[CACHE_NAME]
   cache.trim(max_bytes, max_items)
 
 ####################################################################################################
 def LogDebug(message):
   Log.Debug('*[navix]* %s' % message)
+
+####################################################################################################
+def CreatePlaylist(url):
+
+  LogDebug('creating playlist from url: %s' % url.strip())
+
+  playlist = {}
+
+  try:
+    content = HTTP.Request(url.strip(), encoding='utf-8', timeout=60).content
+  except:
+    LogDebug("error fetching playlist")
+    return playlist
+
+  for key, regex in feed_regex.items():
+    match = re.search(regex, content, re.M)
+    if match is not None:
+      playlist[key] = match.group(1)
+    else:
+      playlist[key] = ''
+
+  #todo: filter out color tags
+  #todo: fix encoding issue
+
+  playlist['items'] = CreatePlaylistItems(content)
+
+  return playlist
+
+####################################################################################################
+def CreatePlaylistItems(content):
+
+  LogDebug('creating playlist items')
+
+  playlist_items = []
+
+  type_regex = "^type="
+  unwanted_playlists = ('Utilities', 'Search')
+
+  matches = re.finditer(type_regex, content, re.M)
+  if matches == None:
+    LogDebug('no playlist items found')
+  else:
+    lastpos = 0
+    for match in matches:
+      if lastpos > 0:
+        text = content[lastpos:match.start()];
+        if not any(unwanted in text for unwanted in unwanted_playlists):
+          item = CreatePlaylistItem(text)
+          playlist_items.append(item)
+      lastpos = match.start()
+
+    text = content[lastpos:len(content)]
+    if not any(unwanted in text for unwanted in unwanted_playlists):
+      item = CreatePlaylistItem(text)
+      playlist_items.append(item)
+
+  return playlist_items
+
+####################################################################################################
+def CreatePlaylistItem(content):
+
+  playlist_item = {}
+
+  for key, regex in feeditem_regex.items():
+    match = re.search(regex, content, re.M)
+    if match is not None:
+      playlist_item[key] = match.group(1)
+    else:
+      playlist_item[key] = ''
+
+  playlist_item['player'] = 'default'
+  playlist_item['error'] = ''
+
+  #todo: filter out color tags
+  #todo: fix encoding issue
+  #todo: fix booleans
+
+  return playlist_item
+
+####################################################################################################
+def any(iterable):
+    for element in iterable:
+        if element:
+            return True
+    return False
+
+####################################################################################################
+# @route('/video/navix/createscraper')
+# def CreateScraper(url, processor, title, summary, thumb, art, include_container=False):
+
+#   clip_obj = VideoClipObject(
+#     key = Callback(CreateScraper, url=url, processor=processor, title=title, summary=summary, thumb=thumb, art=art, include_container=True),
+#     rating_key = url,
+#     title = title,
+#     summary = summary,
+#     thumb = thumb,
+#     art = art,
+#     items = [
+#       MediaObject(
+#         parts = [
+#           PartObject(
+#             key = Callback(PlayScraper, url=url, processor=processor)
+#           )
+#         ],
+#         optimized_for_streaming = True
+#       )
+#     ]
+#   )
+
+#   if include_container:
+#     return ObjectContainer(objects=[clip_obj])
+#   else:
+#     return clip_obj
+
+# ####################################################################################################
+# @indirect
+# @route('video/navix/playscraper')
+# def PlayScraper(item):
+
+#   result = Processor(item)
+
+#   if result is not None:
+#     return IndirectResponse(VideoClipObject, key=Callback(PlayStream(url=result['playurl'], clip=result['playpath'], swf_url=result['swfplayer'], pageurl=result['pageurl'], timeout=result['timeout'], live=result['live'])))
+#   else:
+#     raise Ex.MediaNotAvailable
 
 ####################################################################################################
 class FakeApp:
