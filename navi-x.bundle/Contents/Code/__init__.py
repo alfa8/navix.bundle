@@ -5,7 +5,6 @@ import urllib2
 try: import cStringIO as StringIO
 except: import StringIO
 
-from portal.feed import *
 from processor.nipl import *
 
 ####################################################################################################
@@ -16,7 +15,7 @@ ART             = 'art-default.jpg'
 ICON            = 'icon-default.png'
 DEBUG           = True
 CACHE_NAME      = 'NAVIX_CACHE'
-CACHE_MAX_ITEMS = 100
+CACHE_MAX_ITEMS = 1
 CACHE_MAX_BYTES = 1 * 1024 * 1024
 
 ####################################################################################################
@@ -104,7 +103,10 @@ def Menu(title, url):
           ))
       else:
         oc.add(CreateMovieObject(
-          item = item,
+          title = item['name'],
+          summary = item['description'],
+          url = item['url'],
+          processor = item['processor'],
           thumb = thumb,
           art = art
         ))
@@ -122,21 +124,21 @@ def Menu(title, url):
   return oc
 
 ####################################################################################################
-@route('/video/navix/createmovieobject', item=dict)
-def CreateMovieObject(item, thumb, art, include_container=False):
+@route('/video/navix/createmovieobject')
+def CreateMovieObject(title, summary, url, processor, thumb, art, include_container=False):
 
   movie_obj = MovieObject(
-    key = Callback(CreateMovieObject, item=item, thumb=thumb, art=art, include_container=True),
-    rating_key = item['url'],
-    title = item['name'],
-    summary = item['description'],
+    key = Callback(CreateMovieObject, title=title, summary=summary, url=url, processor=processor, thumb=thumb, art=art, include_container=True),
+    rating_key = title,
+    title = title,
+    summary = summary,
     thumb = thumb,
     art = art,
     items = [
       MediaObject(
         parts = [
           PartObject(
-            key = Callback(PlayVideo, item=item)
+            key = Callback(PlayVideo, url=url, processor=processor)
           )
         ],
         container = Container.MP4,
@@ -154,41 +156,47 @@ def CreateMovieObject(item, thumb, art, include_container=False):
 
 ####################################################################################################
 @indirect
-@route('video/navix/playvideo', item=dict)
-def PlayVideo(item):
+@route('video/navix/playvideo')
+def PlayVideo(url, processor):
 
-  result = Processor(item)
+  result = Processor(url, processor)
 
   if result is not None:
+
+    #come up with a nicer way to distinguish between movies and streams.
+    if result['swfplayer'] != '':
+      PlayStream(url=result['playurl'], clip=result['playpath'], swf_url=result['swfplayer'], pageurl=result['pageurl'], timeout=result['timeout'], live=result['live'])
+
     LogDebug('redirecting to: %s' % result['playurl'])
     return IndirectResponse(MovieObject, key=result['playurl'])
   else:
     raise Ex.MediaNotAvailable
 
 ####################################################################################################
-def Processor(item):
+def Processor(url, processor):
 
-  cache_key = Hash.MD5(item['url'])
+  cache_key = Hash.MD5(url)
   result = GetCacheItem(cache_key)
 
   if result is not None:
     LogDebug('the cache returned a result, skipping processor...')
     return result
 
-  LogDebug('url to process %s' % item['url'])
-  LogDebug('will be processed with %s' % item['processor'])
+  LogDebug('url to process %s' % url)
+  LogDebug('will be processed with %s' % processor)
 
   app = FakeApp()
 
   #phase 1 retreive processor data
-  url = '%s?url=%s&phase=0' % (item['processor'], String.Quote(item['url'], usePlus=True))
-  htmRaw = GetProcessor(url)
+  processor_url = '%s?url=%s&phase=0' % (processor, String.Quote(url, usePlus=True))
+  htmRaw = GetProcessor(processor_url)
   htmRaw = re.sub('(?m)\r[#].+|\n[#].+|^\s+|\s+$', '\r\n', htmRaw)    #remove comments and tabs
   htmRaw = re.sub('[\r\n]+', '\n', htmRaw)                            #remove empty lines
   datalist = htmRaw.replace('\t','').split('\n')
 
   result = None
   if datalist[0] == 'v2':
+    item = CreateProcessorItem(url, processor)
     nipl = NIPL(app, item, 0, datalist, LogDebug)
     result = nipl.process()
 
@@ -196,6 +204,21 @@ def Processor(item):
       SetCacheItem(cache_key, result)
 
   return result
+
+def CreateProcessorItem(url, processor):
+
+  playlist_item = {}
+
+  for key, regex in feeditem_regex.items():
+      playlist_item[key] = ''
+
+  playlist_item['url'] = url
+  playlist_item['processor'] = processor
+  playlist_item['player'] = 'default'
+  playlist_item['error'] = ''
+  playlist_item['playurl'] = ''
+
+  return playlist_item
 
 ####################################################################################################
 @route('/video/navix/createvideoclipobject')
@@ -250,18 +273,6 @@ def PlayStream(url, clip, swf_url, pageurl, timeout, live):
       clip = clip.replace('.flv', '')
 
   return IndirectResponse(VideoClipObject, key=RTMPVideoURL(url=url, clip=clip, swf_url=swf_url, live=live, pageurl=pageurl))
-
-####################################################################################################
-def GetFeed(url):
-
-  LogDebug("requesting url: %s" % url.strip())
-  try:
-    playlist = HTTP.Request(url.strip(), encoding='utf-8', timeout=60).content
-  except:
-    playlist = ""
-    LogDebug("error fetching playlist")
-
-  return Feed(playlist)
 
 ####################################################################################################
 def GetProcessor(url):
@@ -338,8 +349,9 @@ def CreatePlaylist(url):
     else:
       playlist[key] = ''
 
-  #todo: filter out color tags
-  #todo: fix encoding issue
+  if playlist['title'] != '':
+    title = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', playlist['title'])
+    playlist['title'] = unicode(re.sub('\s\s+', ' ', title)).strip()
 
   playlist['items'] = CreatePlaylistItems(content)
 
@@ -390,9 +402,13 @@ def CreatePlaylistItem(content):
   playlist_item['player'] = 'default'
   playlist_item['error'] = ''
 
-  #todo: filter out color tags
-  #todo: fix encoding issue
-  #todo: fix booleans
+  if playlist_item['name'] != '':
+    name = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', playlist_item['name'])
+    playlist_item['name'] = unicode(re.sub('\s\s+', ' ', name)).strip()
+
+  if playlist_item['description'] != '':
+    description = re.sub('\[COLOR=[^\]]+\]|\[/COLOR\]', '', playlist_item['description'])
+    playlist_item['description'] = unicode(re.sub('\s\s+', ' ', description)).strip()
 
   return playlist_item
 
@@ -402,46 +418,6 @@ def any(iterable):
         if element:
             return True
     return False
-
-####################################################################################################
-# @route('/video/navix/createscraper')
-# def CreateScraper(url, processor, title, summary, thumb, art, include_container=False):
-
-#   clip_obj = VideoClipObject(
-#     key = Callback(CreateScraper, url=url, processor=processor, title=title, summary=summary, thumb=thumb, art=art, include_container=True),
-#     rating_key = url,
-#     title = title,
-#     summary = summary,
-#     thumb = thumb,
-#     art = art,
-#     items = [
-#       MediaObject(
-#         parts = [
-#           PartObject(
-#             key = Callback(PlayScraper, url=url, processor=processor)
-#           )
-#         ],
-#         optimized_for_streaming = True
-#       )
-#     ]
-#   )
-
-#   if include_container:
-#     return ObjectContainer(objects=[clip_obj])
-#   else:
-#     return clip_obj
-
-# ####################################################################################################
-# @indirect
-# @route('video/navix/playscraper')
-# def PlayScraper(item):
-
-#   result = Processor(item)
-
-#   if result is not None:
-#     return IndirectResponse(VideoClipObject, key=Callback(PlayStream(url=result['playurl'], clip=result['playpath'], swf_url=result['swfplayer'], pageurl=result['pageurl'], timeout=result['timeout'], live=result['live'])))
-#   else:
-#     raise Ex.MediaNotAvailable
 
 ####################################################################################################
 class FakeApp:
