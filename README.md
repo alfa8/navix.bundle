@@ -4,7 +4,7 @@
 ## How to install
 Two choices:
 * run `git clone https://github.com/kriska/navix.bundle.git` in your plugins folder.
-* or download the navix.bundle as a zip and copy the contents into your plugin folder.
+* or download the repository as a zip and copy the contents into a folder named navix.bundle in your plugins folder.
 
 *You might have to disable capability checking.*
 
