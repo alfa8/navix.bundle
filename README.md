@@ -2,7 +2,10 @@
 **Current status**: *development*
 
 ## How to install
-Just copy the navi-x.bundle into your plugin folder.
+Two choices:
+* run `git clone https://github.com/kriska/navix.bundle.git` in your plugins folder.
+* or copy the navi-x.bundle into your plugin folder.
+
 *You might have to disable capability checking.*
 
 #### Acknowledgements
